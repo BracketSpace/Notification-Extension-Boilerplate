@@ -27,7 +27,7 @@ module.exports = function(grunt) {
 
 	    addtextdomain: {
 	        options: {
-	            textdomain: 'slugnamexx'
+	            textdomain: 'notification-slugnamexx'
 	        },
 	        target: {
 	            files: {
