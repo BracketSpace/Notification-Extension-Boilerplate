@@ -38,7 +38,7 @@ echo "Please, provide Nice Name for your plugin, eg. WooCommerce triggers"
 echo "What is your plugin Nice Name?"
 read user_nicename
 echo -e "${GREY}-- Replacing Nicenamexx with ${user_nicename}...${NC}"
-find . -type f \( -iname \*.php -o -iname \*.txt  -o -iname \*.json \) -exec sed -i "s/Nicenamexx/${user_nicename}/g" {} +
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) -exec sed -i "s/Nicenamexx/${user_nicename}/g" {} +
 echo -e "${GREY}-- Success!${NC}"
 
 echo -e "\n"
@@ -48,7 +48,7 @@ echo "As the slug is used in function names, use _ instead of -"
 echo "What is your plugin Slug?"
 read user_slug
 echo -e "${GREY}-- Replacing slugnamexx with ${user_slug}...${NC}"
-find . -type f \( -iname \*.php -o -iname \*.txt  -o -iname \*.json \) -exec sed -i "s/slugnamexx/${user_slug}/g" {} +
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) -exec sed -i "s/slugnamexx/${user_slug}/g" {} +
 echo -e "${GREY}-- Success!${NC}"
 echo -e "${GREY}-- Changing main plugin file name ${user_slug}...${NC}"
 mv notification-slugnamexx.php "notification-${user_slug}.php"
@@ -60,7 +60,7 @@ echo "By default, namespace always looks like this BracketSpace\Notification\You
 echo "What is your Namespace?"
 read user_namespace
 echo -e "${GREY}-- Replacing XXNAMESPACEXX namespace with ${user_namespace}...${NC}"
-find . -type f \( -iname \*.php -o -iname \*.txt  -o -iname \*.json \) -exec sed -i "s/XXNAMESPACEXX/${user_namespace}/g" {} +
+find . -type f \( -iname \*.php -o -iname \*.txt \) -exec sed -i "s/XXNAMESPACEXX/${user_namespace}/g" {} +
 echo -e "${GREY}-- Success!${NC}"
 
 echo -e "\n"
