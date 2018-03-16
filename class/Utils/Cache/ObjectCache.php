@@ -15,7 +15,7 @@ use BracketSpace\Notification\XXNAMESPACEXX\Utils\Interfaces\Cacheable;
 /**
  * Object cache
  */
-class Object extends Cache implements Cacheable {
+class ObjectCache extends Cache implements Cacheable {
 
 	/**
 	 * Cache group
