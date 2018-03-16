@@ -14,3 +14,9 @@ It's packed with:
 * Class autoloader
 * [Requirements library](https://github.com/Kubitomakita/Requirements) with basic checks
 * [Utils library](https://github.com/Kubitomakita/Utils/)
+
+## Usage
+
+* Download
+* Unpack
+* Call rename.sh script to change all the names, namespaces and slugs in 30 seconds
