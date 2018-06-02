@@ -93,5 +93,8 @@ add_action( 'after_setup_theme', function() {
 		return;
 	}
 
+	$files_class   = new BracketSpace\Notification\Utils\Files( __FILE__ );
+	$view_class    = new BracketSpace\Notification\Utils\View( $files_class );
+	$scripts       = notification_add_doc_hooks( new BracketSpace\Notification\XXNAMESPACEXX\Scripts( $files_class ) );
 
 } );
