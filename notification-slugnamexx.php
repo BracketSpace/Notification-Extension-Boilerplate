@@ -14,7 +14,7 @@
  */
 
 /**
- * @todo replace globally these values:
+ * Thing @todo. Replace globally these values:
  * - XXNAMESPACEXX
  * - Nicenamexx
  * - slugnamexx
@@ -35,15 +35,15 @@ function notification_slugnamexx_autoload( $class ) {
 
 	$parts = explode( '\\', $class );
 
-	if ( array_shift( $parts ) != 'BracketSpace' ) {
+	if ( array_shift( $parts ) !== 'BracketSpace' ) {
 		return false;
 	}
 
-	if ( array_shift( $parts ) != 'Notification' ) {
+	if ( array_shift( $parts ) !== 'Notification' ) {
 		return false;
 	}
 
-	if ( array_shift( $parts ) != 'XXNAMESPACEXX' ) {
+	if ( array_shift( $parts ) !== 'XXNAMESPACEXX' ) {
 		return false;
 	}
 
@@ -81,7 +81,7 @@ add_action( 'after_setup_theme', function() {
 	 * @return void
 	 */
 	function notification_slugnamexx_check_base_plugin( $comparsion, $r ) {
-		if ( $comparsion === true && ! function_exists( 'notification_runtime' ) ) {
+		if ( true === $comparsion && ! function_exists( 'notification_runtime' ) ) {
 			$r->add_error( __( 'Notification plugin active', 'notification-slugnamexx' ) );
 		}
 	}
@@ -93,8 +93,8 @@ add_action( 'after_setup_theme', function() {
 		return;
 	}
 
-	$files_class   = new BracketSpace\Notification\Utils\Files( __FILE__ );
-	$view_class    = new BracketSpace\Notification\Utils\View( $files_class );
-	$scripts       = notification_add_doc_hooks( new BracketSpace\Notification\XXNAMESPACEXX\Scripts( $files_class ) );
+	$files_class = new BracketSpace\Notification\Utils\Files( __FILE__ );
+	$view_class  = new BracketSpace\Notification\Utils\View( $files_class );
+	$scripts     = notification_add_doc_hooks( new BracketSpace\Notification\XXNAMESPACEXX\Scripts( $files_class ) );
 
 } );
