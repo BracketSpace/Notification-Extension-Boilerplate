@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <ruleset name="WordPress Coding Standards for Plugins">
-	<description>Sniffs for Nicenamexx WordPress plugin</description>
+	<description>Sniffs for Notification : Nicenamexx WordPress plugin</description>
 
 	<rule ref="WordPress">
 		<!-- <exclude name="WordPress-VIP" /> -->
