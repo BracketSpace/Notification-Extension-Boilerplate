@@ -61,8 +61,8 @@ add_action( 'after_setup_theme', function() {
 	 * Requirements check
 	 */
 	$requirements = new BracketSpace\Notification\XXNAMESPACEXX\Utils\Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), array(
-		'php'          => '5.3',
-		'wp'           => '4.6',
+		'php'          => '5.6',
+		'wp'           => '4.9',
 		'notification' => true, // Add specific version here if you want.
 	) );
 
