@@ -63,7 +63,7 @@ add_action( 'after_setup_theme', function() {
 	$requirements = new BracketSpace\Notification\XXNAMESPACEXX\Utils\Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), array(
 		'php'          => '5.3',
 		'wp'           => '4.6',
-		'notification' => true,
+		'notification' => true, // Add specific version here if you want.
 	) );
 
 	/**
@@ -76,8 +76,18 @@ add_action( 'after_setup_theme', function() {
 	 * @return void
 	 */
 	function notification_slugnamexx_check_base_plugin( $comparsion, $r ) {
-		if ( true === $comparsion && ! function_exists( 'notification_runtime' ) ) {
-			$r->add_error( __( 'Notification plugin active', 'notification-slugnamexx' ) );
+		if ( ! function_exists( 'notification_runtime' ) ) {
+			$r->add_error( __( '<a href="https://wordpress.org/plugins/notification/" target="_blank">Notification</a> plugin active', 'notification-woocommerce' ) );
+			return;
+		}
+
+		if ( true !== $comparsion ) {
+			if ( ! defined( 'NOTIFICATION_VERSION' ) ) {
+				$r->add_error( __( 'Notification plugin updated to the latest version', 'notification-woocommerce' ) );
+			} elseif ( version_compare( $comparsion, NOTIFICATION_VERSION, '>' ) ) {
+				// translators: version number.
+				$r->add_error( sprintf( __( 'Notification plugin in version at least %s', 'notification-woocommerce' ), $comparsion ) );
+			}
 		}
 	}
 
