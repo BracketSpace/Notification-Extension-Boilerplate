@@ -2,9 +2,9 @@
 /**
  * Plugin Name: Notification : Nicenamexx
  * Description: Extension for Notification plugin
- * Plugin URI: https://localhost
+ * Plugin URI: https://bracketspace.com
  * Author: Author
- * Author URI: https://localhost
+ * Author URI: https://bracketspace.com
  * Version: 1.0.0
  * License: GPL3
  * Text Domain: notification-slugnamexx
