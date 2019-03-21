@@ -2,7 +2,7 @@
 ### Project ###
 *.log
 node_modules/
-assets/dist/
+src/assets/dist/
 
 ### Windows ###
 # Windows image file caches

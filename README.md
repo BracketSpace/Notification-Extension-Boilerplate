@@ -11,12 +11,10 @@ Just download it and use it for something awesome.
 It's packed with:
 
 * WordPress readme.txt init file
-* Class autoloader
-* [Requirements library](https://github.com/Kubitomakita/Requirements) with basic checks
-* [Utils library](https://github.com/Kubitomakita/Utils/)
+* Composer class autoloader
 
 ## Usage
 
 * Download
 * Unpack
-* Call rename.sh script to change all the names, namespaces and slugs in 30 seconds
+* Call rename.sh script to change all the names, namespaces and slugs in a few seconds

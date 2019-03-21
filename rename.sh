@@ -60,7 +60,7 @@ echo "By default, namespace always looks like this BracketSpace\Notification\You
 echo "What is your Namespace?"
 read user_namespace
 echo -e "${GREY}-- Replacing XXNAMESPACEXX namespace with ${user_namespace}...${NC}"
-find . -type f \( -iname \*.php -o -iname \*.txt \) -exec sed -i "s/XXNAMESPACEXX/${user_namespace}/g" {} +
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.js \) -exec sed -i "s/XXNAMESPACEXX/${user_namespace}/g" {} +
 echo -e "${GREY}-- Success!${NC}"
 
 echo -e "\n"

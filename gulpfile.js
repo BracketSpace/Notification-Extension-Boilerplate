@@ -52,7 +52,15 @@ gulp.task( 'default', [ 'styles', 'scripts' ] );
 ///////////
 gulp.task( 'watch', [ 'default' ], function() {
 
+	browserSync.init( {
+		open : false
+	} );
+
     gulp.watch( style_sources, ['styles'] );
     gulp.watch( script_sources, ['scripts'] );
+
+    gulp.watch( 'src/inc/**/*.php', reload );
+    gulp.watch( 'src/class/**/*.php', reload );
+    gulp.watch( 'src/views/**/*.php', reload );
 
 } );
