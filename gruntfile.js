@@ -13,6 +13,7 @@ module.exports = function(grunt) {
 		                'assets',
 		                'bin',
 		                'tests',
+		                'vendor',
 		                '.git/'
 		            ],
 	                potHeaders: {
@@ -33,9 +34,7 @@ module.exports = function(grunt) {
 	            files: {
 	                src: [
 	                    'notification-slugnamexx.php',
-	                    './inc/**/*.php',
-	                    './class/**/*.php',
-	                    './views/**/*.php'
+	                    './src/**/*.php',
 	                ]
 	            }
 	        }
