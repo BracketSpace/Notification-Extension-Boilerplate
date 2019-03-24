@@ -25,6 +25,9 @@
  * Or just execute the rename.sh script
  */
 
+/**
+ * Load Composer dependencies.
+ */
 require_once 'vendor/autoload.php';
 
 /**
