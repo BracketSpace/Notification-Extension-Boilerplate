@@ -29,6 +29,7 @@ class Runtime extends Utils\DocHooks {
 	 */
 	public function __construct( $plugin_file ) {
 		$this->plugin_file = $plugin_file;
+		$this->add_hooks();
 	}
 
 	/**
@@ -51,9 +52,6 @@ class Runtime extends Utils\DocHooks {
 	 * @return void
 	 */
 	public function instances() {
-
-		// Allow DockHooks usage.
-		$this->add_hooks();
 
 		$this->files = new Utils\Files( $this->plugin_file );
 
