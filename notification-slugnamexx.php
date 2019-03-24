@@ -27,6 +27,12 @@
 
 require_once 'vendor/autoload.php';
 
+/**
+ * Gets plugin runtime object.
+ *
+ * @since  [Next]
+ * @return BracketSpace\Notification\XXNAMESPACEXX\Runtime
+ */
 function notification_slugnamexx_runtime() {
 
 	global $notification_slugnamexx_runtime;

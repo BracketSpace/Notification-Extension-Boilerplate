@@ -137,7 +137,7 @@ class Requirements {
 			echo '<ul style="list-style: disc; padding-left: 20px;">';
 
 		foreach ( $this->errors as $error ) {
-			echo '<li>' . $error . '</li>'; // phpcs:xss ok.
+			echo '<li>' . $error . '</li>'; // phpcs:ignore
 		}
 
 			echo '</ul>';
