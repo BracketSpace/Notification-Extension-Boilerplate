@@ -5,7 +5,6 @@ node_modules/
 src/assets/dist/
 /vendor
 
-
 ### Windows ###
 # Windows image file caches
 Thumbs.db
