@@ -59,7 +59,7 @@ add_action( 'notification/boot/initial', function() {
 	$requirements = new BracketSpace\Notification\XXNAMESPACEXX\Utils\Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), [
 		'php'          => '5.6',
 		'wp'           => '4.9',
-		'notification' => true, // Add specific version here if you want.
+		'notification' => '6.0.0',
 	] );
 
 	$requirements->add_check( 'notification', require 'src/inc/requirements/notification.php' );
