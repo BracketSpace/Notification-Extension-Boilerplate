@@ -38,8 +38,11 @@ class Scripts {
 	 * - Add new page hook to this array
 	 * - Create new action if you don't need any core Notification scripts or styles
 	 *
-	 * @since [Next]
-	 * @param [type] $page_hooks [description]
+	 * @filter notification/scripts/allowed_hooks
+	 *
+	 * @since  [Next]
+	 * @param  array $page_hooks Page hooks.
+	 * @return array
 	 */
 	public function add_screen( $page_hooks ) {
 		// $page_hook[] = 'tools.php'
