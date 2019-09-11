@@ -57,7 +57,7 @@ foreach ( $runtime->_called_doc_hooks as $class_name => $hooks ) {
 
 
 // Clear the hooks file.
-$hooks_file = $plugin_dir . '/inc/hooks.php';
+$hooks_file = $plugin_dir . '/src/inc/hooks.php';
 if ( file_exists( $hooks_file ) ) {
 	unlink( $hooks_file );
 }
@@ -69,7 +69,7 @@ $file_content = '<?php
  *
  * Automatically generated with bin/dump-hooks.php file.
  *
- * @package notification
+ * @package notification/slugnamexx
  */
 
 // phpcs:disable

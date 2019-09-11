@@ -15,13 +15,6 @@ use BracketSpace\Notification\Utils;
 class Runtime extends Utils\DocHooks {
 
 	/**
-	 * Plugin file path
-	 *
-	 * @var string
-	 */
-	protected $plugin_file;
-
-	/**
 	 * Class constructor
 	 *
 	 * @since [Next]
@@ -29,7 +22,6 @@ class Runtime extends Utils\DocHooks {
 	 */
 	public function __construct( $plugin_file ) {
 		$this->plugin_file = $plugin_file;
-		$this->add_hooks();
 	}
 
 	/**
@@ -42,11 +34,31 @@ class Runtime extends Utils\DocHooks {
 
 		$this->instances();
 		$this->load_functions();
+		$this->actions();
+
+	}
+
+	/**
+	 * Registers all the hooks with DocHooks
+	 *
+	 * @since  [Next]
+	 * @return void
+	 */
+	public function register_hooks() {
+
+		$this->add_hooks();
+
+		foreach ( get_object_vars( $this ) as $instance ) {
+			if ( is_object( $instance ) ) {
+				$this->add_hooks( $instance );
+			}
+		}
 
 	}
 
 	/**
 	 * Creates needed class instances
+	 * Assing an instance to a property to use dochooks.
 	 *
 	 * @since  [Next]
 	 * @return void
@@ -55,8 +67,8 @@ class Runtime extends Utils\DocHooks {
 
 		$this->files = new Utils\Files( $this->plugin_file );
 
-		$i18n    = $this->add_hooks( new Utils\Internationalization( $this->files, 'notification-slugnamexx' ) );
-		$scripts = $this->add_hooks( new Admin\Scripts( $this->files ) );
+		$this->i18n    = $this->add_hooks( new Utils\Internationalization( $this->files, 'notification-slugnamexx' ) );
+		$this->scripts = $this->add_hooks( new Admin\Scripts( $this->files ) );
 
 	}
 
@@ -70,6 +82,25 @@ class Runtime extends Utils\DocHooks {
 	 * @return void
 	 */
 	public function late_instances() {
+
+	}
+
+	/**
+	 * All WordPress actions this plugin utilizes
+	 * Should register plugin settings as well.
+	 *
+	 * @since  [Next]
+	 * @return void
+	 */
+	public function actions() {
+
+		$this->register_hooks();
+
+		// DocHooks compatibility.
+		$hooks_file = $this->files->file_path( 'inc/hooks.php' );
+		if ( ! notification_dochooks_enabled() && file_exists( $hooks_file ) ) {
+			include_once $hooks_file;
+		}
 
 	}
 
