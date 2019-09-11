@@ -67,8 +67,8 @@ class Runtime extends Utils\DocHooks {
 
 		$this->files = new Utils\Files( $this->plugin_file );
 
-		$this->i18n    = $this->add_hooks( new Utils\Internationalization( $this->files, 'notification-slugnamexx' ) );
-		$this->scripts = $this->add_hooks( new Admin\Scripts( $this->files ) );
+		$this->i18n    = new Utils\Internationalization( $this->files, 'notification-slugnamexx' );
+		$this->scripts = new Admin\Scripts( $this->files );
 
 	}
 
