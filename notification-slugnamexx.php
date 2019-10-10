@@ -28,7 +28,7 @@
 /**
  * Load Composer dependencies.
  */
-require_once 'vendor/autoload.php';
+require_once dirname( __FILE__ ) . '/vendor/autoload.php';
 
 /**
  * Gets plugin runtime object.
