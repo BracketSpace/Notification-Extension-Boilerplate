@@ -60,9 +60,12 @@ class Runtime {
 
 		// Requirements check.
 		$requirements = new Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), [
-			'php' => '7.0',
-			'wp'  => '5.3',
+			'php'          => '7.0',
+			'wp'           => '5.3',
+			'notification' => '7.0.0',
 		] );
+
+		$requirements->register_checker( __NAMESPACE__ . '\\Requirements\\BasePlugin' );
 
 		if ( ! $requirements->satisfied() ) {
 			$requirements->print_notice();
