@@ -8,7 +8,7 @@
  * Version: 1.0.0
  * License: GPL3
  * Text Domain: notification-slugnamexx
- * Domain Path: /languages
+ * Domain Path: /src/languages
  *
  * @package notification/slugnamexx
  */
@@ -25,51 +25,63 @@
  * Or just execute the rename.sh script
  */
 
-/**
- * Load Composer dependencies.
- */
-require_once dirname( __FILE__ ) . '/vendor/autoload.php';
-
-/**
- * Gets plugin runtime object.
- *
- * @since  [Next]
- * @return BracketSpace\Notification\XXNAMESPACEXX\Runtime
- */
-function notification_slugnamexx_runtime() {
-
-	global $notification_slugnamexx_runtime;
-
-	if ( empty( $notification_slugnamexx_runtime ) ) {
-		$notification_slugnamexx_runtime = new BracketSpace\Notification\XXNAMESPACEXX\Runtime( __FILE__ );
-	}
-
-	return $notification_slugnamexx_runtime;
-
-}
-
-/**
- * Boot up the plugin
- */
-add_action( 'notification/boot/initial', function() {
+if ( ! class_exists( 'NotificationXXNAMESPACEXX' ) ) :
 
 	/**
-	 * Requirements check
+	 * NotificationXXNAMESPACEXX class
 	 */
-	$requirements = new BracketSpace\Notification\XXNAMESPACEXX\Utils\Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), [
-		'php'          => '5.6',
-		'wp'           => '4.9',
-		'notification' => '6.0.0',
-	] );
+	class NotificationXXNAMESPACEXX {
 
-	$requirements->add_check( 'notification', require 'src/inc/requirements/notification.php' );
+		/**
+		 * Runtime object
+		 *
+		 * @var BracketSpace\Notification\XXNAMESPACEXX\Runtime
+		 */
+		protected static $runtime;
 
-	if ( ! $requirements->satisfied() ) {
-		add_action( 'admin_notices', [ $requirements, 'notice' ] );
-		return;
+		/**
+		 * Initializes the plugin runtime
+		 *
+		 * @since  [Next]
+		 * @param  string $plugin_file Main plugin file.
+		 * @return BracketSpace\Notification\XXNAMESPACEXX\Runtime
+		 */
+		public static function init( $plugin_file ) {
+			if ( ! isset( self::$runtime ) ) {
+				require_once dirname( $plugin_file ) . '/src/classes/Runtime.php';
+				self::$runtime = new BracketSpace\Notification\XXNAMESPACEXX\Runtime( $plugin_file );
+			}
+
+			return self::$runtime;
+		}
+
+		/**
+		 * Gets runtime component
+		 *
+		 * @since  [Next]
+		 * @param  string $component_name Component name.
+		 * @return mixed
+		 */
+		public static function component( $component_name ) {
+			if ( isset( self::$runtime, self::$runtime->{ $component_name } ) ) {
+				return self::$runtime->{ $component_name };
+			}
+		}
+
+		/**
+		 * Gets runtime object
+		 *
+		 * @since  [Next]
+		 * @return BracketSpace\Notification\Runtime
+		 */
+		public static function runtime() {
+			return self::$runtime;
+		}
+
 	}
 
-	$runtime = notification_slugnamexx_runtime();
-	$runtime->boot();
+endif;
 
-} );
+add_action( 'notification/init', function() {
+	NotificationXXNAMESPACEXX::init( __FILE__ )->init();
+}, 2 );

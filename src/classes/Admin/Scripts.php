@@ -7,7 +7,7 @@
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Admin;
 
-use BracketSpace\Notification\Utils\Files;
+use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
 
 /**
  * Scripts class
@@ -15,20 +15,29 @@ use BracketSpace\Notification\Utils\Files;
 class Scripts {
 
 	/**
-	 * Files class
+	 * Filesystem object
+	 *
+	 * @var Filesystem
+	 */
+	private $filesystem;
+
+	/**
+	 * Runtime class
 	 *
 	 * @var object
 	 */
-	private $files;
+	private $runtime;
 
 	/**
 	 * Scripts constructor
 	 *
 	 * @since [Next]
-	 * @param Files $files Files class.
+	 * @param object     $runtime Plugin Runtime class.
+	 * @param Filesystem $fs      Assets filesystem object.
 	 */
-	public function __construct( Files $files ) {
-		$this->files = $files;
+	public function __construct( $runtime, Filesystem $fs ) {
+		$this->filesystem = $fs;
+		$this->runtime    = $runtime;
 	}
 
 	/**
@@ -59,14 +68,13 @@ class Scripts {
 	 */
 	public function enqueue_scripts( $page_hook ) {
 
-		wp_enqueue_style( 'notification-slugnamexx', $this->files->asset_url( 'css', 'style.css' ), [], $this->files->asset_mtime( 'css', 'style.css' ) );
-		wp_enqueue_script( 'notification-slugnamexx', $this->files->asset_url( 'js', 'scripts.min.js' ), [ 'jquery' ], $this->files->asset_mtime( 'js', 'scripts.min.js' ), true );
+		wp_enqueue_style( 'notification-slugnamexx', $this->filesystem->url( 'css/style.css' ), [], $this->filesystem->mtime( 'css/style.css' ) );
+		wp_enqueue_script( 'notification-slugnamexx', $this->filesystem->url( 'js/scripts.js' ), [ 'jquery' ], $this->filesystem->mtime( 'js/scripts.js' ), true );
 
 		wp_localize_script( 'notification-slugnamexx', 'notification_slugnamexx', [
 			'ajaxurl' => admin_url( 'admin-ajax.php' ),
 		] );
 
 	}
-
 
 }
