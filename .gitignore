@@ -1,4 +1,5 @@
 ### Project ###
+composer.lock
 *.log
 node_modules/
 /dist

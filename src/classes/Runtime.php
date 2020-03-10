@@ -8,8 +8,8 @@
 namespace BracketSpace\Notification\XXNAMESPACEXX;
 
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Requirements\Requirements;
-use BracketSpace\Notification\Vendor\Micropackage\DocHooks\HookTrait;
-use BracketSpace\Notification\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
+use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\HookTrait;
+use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Storage as TemplateStorage;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Internationalization\Internationalization;
