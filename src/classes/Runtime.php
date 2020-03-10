@@ -8,7 +8,8 @@
 namespace BracketSpace\Notification\XXNAMESPACEXX;
 
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Requirements\Requirements;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\Helper as DocHooks;
+use BracketSpace\Notification\Vendor\Micropackage\DocHooks\HookTrait;
+use BracketSpace\Notification\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Storage as TemplateStorage;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Internationalization\Internationalization;
@@ -17,6 +18,8 @@ use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Internationaliza
  * Runtime class
  */
 class Runtime {
+
+	use HookTrait;
 
 	/**
 	 * Main plugin file path
@@ -31,6 +34,13 @@ class Runtime {
 	 * @var bool
 	 */
 	protected $requirements_unmet;
+
+	/**
+	 * Components
+	 *
+	 * @var array
+	 */
+	protected $components = [];
 
 	/**
 	 * Class constructor
@@ -55,9 +65,6 @@ class Runtime {
 			return;
 		}
 
-		// Autoloading.
-		require_once dirname( $this->plugin_file ) . '/vendor/autoload.php';
-
 		// Requirements check.
 		$requirements = new Requirements( __( 'Notification : Nicenamexx', 'notification-slugnamexx' ), [
 			'php'          => '7.0',
@@ -77,7 +84,7 @@ class Runtime {
 		$this->templates();
 		$this->singletons();
 		$this->actions();
-		$this->components();
+		$this->elements();
 
 		do_action( 'notification/slugnamexx/init' );
 
@@ -91,11 +98,11 @@ class Runtime {
 	 */
 	public function register_hooks() {
 
-		DocHooks::hook( $this );
+		$this->add_hooks( $this );
 
-		foreach ( get_object_vars( $this ) as $instance ) {
-			if ( is_object( $instance ) ) {
-				DocHooks::hook( $instance );
+		foreach ( $this->components as $component ) {
+			if ( is_object( $component ) ) {
+				$this->add_hooks( $component );
 			}
 		}
 
@@ -143,6 +150,48 @@ class Runtime {
 	}
 
 	/**
+	 * Adds runtime component
+	 *
+	 * @since  [Next]
+	 * @throws \Exception When component is already registered.
+	 * @param  string $name      Component name.
+	 * @param  mixed  $component Component.
+	 * @return $this
+	 */
+	public function add_component( $name, $component ) {
+
+		if ( isset( $this->components[ $name ] ) ) {
+			throw new \Exception( sprintf( 'Component %s is already added.', $name ) );
+		}
+
+		$this->components[ $name ] = $component;
+
+		return $this;
+
+	}
+
+	/**
+	 * Gets runtime component
+	 *
+	 * @since  [Next]
+	 * @param  string $name Component name.
+	 * @return mixed        Component or null
+	 */
+	public function component( $name ) {
+		return isset( $this->components[ $name ] ) ? $this->components[ $name ] : null;
+	}
+
+	/**
+	 * Gets runtime components
+	 *
+	 * @since  [Next]
+	 * @return array
+	 */
+	public function components() {
+		return $this->components;
+	}
+
+	/**
 	 * Creates needed classes
 	 * Singletons are used for a sake of performance
 	 *
@@ -151,10 +200,10 @@ class Runtime {
 	 */
 	public function singletons() {
 
-		$this->i18n    = new Internationalization( 'notification-slugnamexx', $this->get_filesystem( 'includes' )->path( 'languages' ) );
-		$this->scripts = new Admin\Scripts( $this, $this->get_filesystem( 'dist' ) );
+		$this->add_component( 'i18n', new Internationalization( 'notification-slugnamexx', $this->get_filesystem( 'includes' )->path( 'languages' ) ) );
+		$this->add_component( 'scripts', new Admin\Scripts( $this->get_filesystem( 'dist' ) ) );
 
-		$this->admin_settings = new Admin\Settings();
+		$this->add_component( 'admin_settings', new Admin\Settings() );
 
 	}
 
@@ -168,24 +217,24 @@ class Runtime {
 
 		$this->register_hooks();
 
-		notification_register_settings( [ $this->admin_settings, 'register_trigger_settings' ], 20 );
-		notification_register_settings( [ $this->admin_settings, 'register_carrier_settings' ], 30 );
+		notification_register_settings( [ $this->component( 'admin_settings' ), 'register_trigger_settings' ], 20 );
+		notification_register_settings( [ $this->component( 'admin_settings' ), 'register_carrier_settings' ], 30 );
 
 		// DocHooks compatibility.
-		if ( ! DocHooks::is_enabled() && $this->get_filesystem( 'includes' )->exists( 'hooks.php' ) ) {
+		if ( ! DocHooksHelper::is_enabled() && $this->get_filesystem( 'includes' )->exists( 'hooks.php' ) ) {
 			include_once $this->get_filesystem( 'includes' )->path( 'hooks.php' );
 		}
 
 	}
 
 	/**
-	 * Loads components
+	 * Loads elements
 	 *
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function components() {
-		array_map( [ $this, 'load_component' ], [
+	public function elements() {
+		array_map( [ $this, 'load_element' ], [
 			'triggers',
 			'recipients',
 			'carriers',
@@ -193,15 +242,15 @@ class Runtime {
 	}
 
 	/**
-	 * Loads component
+	 * Loads element
 	 *
 	 * @since  [Next]
-	 * @param  string $component Component file slug.
+	 * @param  string $element element file slug.
 	 * @return void
 	 */
-	public function load_component( $component ) {
-		if ( apply_filters( 'notification/slugnamexx/load/component/' . $component, true ) ) {
-			$path = sprintf( 'components/%s.php', $component );
+	public function load_element( $element ) {
+		if ( apply_filters( 'notification/slugnamexx/load/element/' . $element, true ) ) {
+			$path = sprintf( 'elements/%s.php', $element );
 			if ( $this->get_filesystem( 'includes' )->exists( $path ) ) {
 				require_once $this->get_filesystem( 'includes' )->path( $path );
 			}
