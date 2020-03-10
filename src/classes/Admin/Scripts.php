@@ -22,22 +22,13 @@ class Scripts {
 	private $filesystem;
 
 	/**
-	 * Runtime class
-	 *
-	 * @var object
-	 */
-	private $runtime;
-
-	/**
 	 * Scripts constructor
 	 *
 	 * @since [Next]
-	 * @param object     $runtime Plugin Runtime class.
-	 * @param Filesystem $fs      Assets filesystem object.
+	 * @param Filesystem $fs Assets filesystem object.
 	 */
-	public function __construct( $runtime, Filesystem $fs ) {
+	public function __construct( Filesystem $fs ) {
 		$this->filesystem = $fs;
-		$this->runtime    = $runtime;
 	}
 
 	/**
