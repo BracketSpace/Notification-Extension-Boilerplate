@@ -50,6 +50,8 @@ if ( ! class_exists( 'NotificationXXNAMESPACEXX' ) ) :
 			if ( ! isset( self::$runtime ) ) {
 				// Autoloading.
 				require_once dirname( $plugin_file ) . '/vendor/autoload.php';
+				// Temporary fix for wrong template package, @see: https://github.com/TypistTech/imposter/issues/130.
+				require_once dirname( $plugin_file ) . '/vendor/micropackage/templates/src/functions/template.php';
 				self::$runtime = new BracketSpace\Notification\XXNAMESPACEXX\Runtime( $plugin_file );
 			}
 
