@@ -5,8 +5,6 @@
  * @package notification/slugnamexx
  */
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates;
-
 /**
  * Gets one of the plugin filesystems
  *
@@ -29,7 +27,7 @@ function notification_slugnamexx_filesystem( $name ) {
  * @return void
  */
 function notification_slugnamexx_template( $template_name, $vars = [] ) {
-	template( 'templates', $template_name, $vars );
+	BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\template( 'templates', $template_name, $vars );
 }
 
 /**
@@ -43,5 +41,5 @@ function notification_slugnamexx_template( $template_name, $vars = [] ) {
  * @return string
  */
 function notification_slugnamexx_get_template( $template_name, $vars = [] ) {
-	return get_template( 'templates', $template_name, $vars );
+	return BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\get_template( 'templates', $template_name, $vars );
 }
