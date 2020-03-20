@@ -5,7 +5,7 @@
  * @package notification-slugnamexx
  */
 
-namespace BracketSpace\Notification\XXNAMESPACEXX\Components\Carrier;
+namespace BracketSpace\Notification\XXNAMESPACEXX\Elements\Carrier;
 
 use BracketSpace\Notification\Interfaces\Triggerable;
 use BracketSpace\Notification\Abstracts;

@@ -5,7 +5,7 @@
  * @package notification-slugnamexx
  */
 
-use BracketSpace\Notification\XXNAMESPACEXX\Components\Carrier;
+use BracketSpace\Notification\XXNAMESPACEXX\Elements\Carrier;
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
 
 if ( notification_get_setting( 'carriers/slugnamexx/enable' ) ) {

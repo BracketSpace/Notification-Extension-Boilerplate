@@ -5,7 +5,7 @@
  * @package notification-slugnamexx
  */
 
-namespace BracketSpace\Notification\XXNAMESPACEXX\Components\Recipient;
+namespace BracketSpace\Notification\XXNAMESPACEXX\Elements\Recipient;
 
 use BracketSpace\Notification\Abstracts;
 use BracketSpace\Notification\Defaults\Field;

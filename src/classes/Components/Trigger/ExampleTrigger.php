@@ -5,7 +5,7 @@
  * @package notification-slugnamexx
  */
 
-namespace BracketSpace\Notification\XXNAMESPACEXX\Components\Trigger;
+namespace BracketSpace\Notification\XXNAMESPACEXX\Elements\Trigger;
 
 use BracketSpace\Notification\Abstracts;
 use BracketSpace\Notification\Defaults\MergeTag;
