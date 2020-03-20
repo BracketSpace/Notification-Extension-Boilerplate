@@ -48,7 +48,7 @@ class Settings {
 	 */
 	public function register_carrier_settings( $settings ) {
 
-		$carriers = $settings->add_section( __( 'Carriers', 'notification-slugnamexx' ), 'notifications' );
+		$carriers = $settings->add_section( __( 'Carriers', 'notification-slugnamexx' ), 'carriers' );
 
 		$carriers->add_group( __( 'Nicenamexx', 'notification-slugnamexx' ), 'slugnamexx' )
 			->add_field( [
