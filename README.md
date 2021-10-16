@@ -1,4 +1,4 @@
-# Notification Extension Boilerplate
+# Notification v8 Extension Boilerplate
 
 This is a starter for any [Notification plugin](https://wordpress.org/plugins/notification/) extension.
 
@@ -7,11 +7,6 @@ Just download it and use it for something awesome.
 [Download the Boilerplate](https://github.com/BracketSpace/Notification-Extension-Boilerplate/archive/master.zip)
 
 ---
-
-It's packed with:
-
-* WordPress readme.txt init file
-* Composer class autoloader
 
 ## Usage
 

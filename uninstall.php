@@ -2,7 +2,7 @@
 /**
  * Plugin uninstallation file
  *
- * @package notification/slugnamexx
+ * @package notification/slug-namexx
  */
 
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {

@@ -1,6 +1,8 @@
 {
-	"name": "slugnamexx",
+	"name": "slug-namexx",
 	"description": "Notification extension",
+	"author": "BracketSpace",
+	"license": "GPL-3.0-or-later",
 	"scripts": {
 		"build": "mp-scripts build --mode=development",
 		"build:production": "mp-scripts build --mode=production",
@@ -11,13 +13,19 @@
 		"fix:js": "mp-scripts lint-js --fix",
 		"lint": "run-p \"lint:*\"",
 		"fix": "run-p \"fix:*\"",
-		"makepot": "wp-pot --src 'src/**/*.php' --dest-file 'src/includes/languages/notification-slugnamexx.pot' --package 'notification-slugnamexx'"
+		"makepot": "wp-pot --src 'src/**/*.php' --src 'notification-slug-namexx.php' --src 'resources/templates/**/*.php' --dest-file 'resources/languages/notification-slug-namexx.pot' --package 'notification-slug-namexx'"
 	},
-	"author": "BracketSpace",
-	"license": "GPL-3.0-or-later",
 	"devDependencies": {
-		"@micropackage/scripts": "^1.0.0",
+		"@micropackage/scripts": "^1.1.0",
 		"npm-run-all": "^4.1.5",
 		"wp-pot-cli": "^1.3.0"
+	},
+	"mpScriptsConfig": {
+		"paths": {
+			"src": "resources",
+			"scripts": "js/src",
+			"styles": "css/src",
+			"output": "resources"
+		}
 	}
 }

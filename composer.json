@@ -1,30 +1,31 @@
 {
-	"name": "notification/slugnamexx",
+	"name": "notification/slug-namexx",
 	"type": "wordpress-plugin",
 	"scripts": {
+		"phpcbf": "phpcbf",
 		"phpcs": "phpcs",
-		"phpcbf": "phpcbf"
+		"phpcompat": "phpcs --standard=PHPCompatibility --runtime-set testVersion 7.0 notification-slug-namexx.php load.php uninstall.php src/ resources/templates/",
+		"phplint": "parallel-lint --exclude node_modules --exclude vendor --exclude resources/css --exclude resources/js ."
 	},
 	"autoload": {
 		"psr-4": {
-			"BracketSpace\\Notification\\XXNAMESPACEXX\\": "src/classes"
-		},
-		"files": [
-			"src/includes/functions/general.php"
-		]
+			"BracketSpace\\Notification\\XXNAMESPACEXX\\": "src/"
+		}
 	},
 	"require": {
-		"typisttech/imposter-plugin": "^0.5.0",
-		"micropackage/requirements": "^1.0",
-		"micropackage/dochooks": "^1.0",
-		"micropackage/filesystem": "^1.1",
-		"micropackage/templates": "^1.1",
+		"php": "^7.0",
 		"micropackage/ajax": "^1.0",
-		"micropackage/internationalization": "^1.0"
+		"micropackage/dochooks": "1.0.2",
+		"micropackage/filesystem": "^1.1",
+		"micropackage/internationalization": "^1.0",
+		"micropackage/requirements": "^1.0",
+		"micropackage/templates": "^1.1",
+		"typisttech/imposter-plugin": "^0.6.2"
 	},
 	"require-dev": {
-		"dealerdirect/phpcodesniffer-composer-installer": "^0.5.0",
-		"phpcompatibility/php-compatibility": "^9.1",
+		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
+		"jakub-onderka/php-parallel-lint": "^1.0",
+		"phpcompatibility/php-compatibility": "^9.3",
 		"wp-coding-standards/wpcs": "^2.0"
 	},
 	"extra": {

@@ -2,13 +2,13 @@
 /**
  * Load file
  *
- * @package notification/slugnamexx
+ * @package notification/slug-namexx
  */
 
 /**
  * Load the main plugin file.
  */
-require_once __DIR__ . '/notification-slugnamexx.php';
+require_once __DIR__ . '/notification-slug-namexx.php';
 
 /**
  * Initialize early.
