@@ -8,7 +8,7 @@
  * Version: 1.0.0
  * License: GPL3
  * Text Domain: notification-slug-namexx
- * Domain Path: /src/languages
+ * Domain Path: /resources/languages
  *
  * @package notification/slug-namexx
  */
