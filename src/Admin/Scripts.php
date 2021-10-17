@@ -64,18 +64,18 @@ class Scripts {
 			$this->filesystem->mtime( 'resources/css/dist/style.css' )
 		);
 
-		if ( $this->filesystem->exists( 'resources/js/dist/main.asset.php' ) ) {
-			$script_data  = require $this->filesystem->path( 'resources/js/dist/main.asset.php' );
+		if ( $this->filesystem->exists( 'resources/js/dist/script.asset.php' ) ) {
+			$script_data  = require $this->filesystem->path( 'resources/js/dist/script.asset.php' );
 			$dependencies = $script_data['dependencies'];
 			$version      = $script_data['version'];
 		} else {
 			$dependencies = [];
-			$version      = $this->filesystem->mtime( 'resources/js/dist/scripts.js' );
+			$version      = $this->filesystem->mtime( 'resources/js/dist/script.js' );
 		}
 
 		wp_enqueue_script(
 			'notification-slug-namexx',
-			$this->filesystem->url( 'resources/js/dist/scripts.js' ),
+			$this->filesystem->url( 'resources/js/dist/script.js' ),
 			$dependencies,
 			$version,
 			true

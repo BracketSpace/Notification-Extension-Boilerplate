@@ -81,15 +81,15 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./js/src/main.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./js/src/script.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./js/src/main.js":
-/*!************************!*\
-  !*** ./js/src/main.js ***!
-  \************************/
+/***/ "./js/src/script.js":
+/*!**************************!*\
+  !*** ./js/src/script.js ***!
+  \**************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -98,4 +98,4 @@
 /***/ })
 
 /******/ });
-//# sourceMappingURL=main.js.map
+//# sourceMappingURL=script.js.map
