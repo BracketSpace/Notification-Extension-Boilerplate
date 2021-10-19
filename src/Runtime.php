@@ -186,7 +186,7 @@ class Runtime {
 	 * @return void
 	 */
 	public function singletons() {
-		$this->add_component( 'i18n', new Internationalization( 'notification-slug-namexx', $this->get_filesystem( 'includes' )->path( 'languages' ) ) );
+		$this->add_component( 'i18n', new Internationalization( 'notification-slug-namexx', $this->get_filesystem()->path( 'resources/languages' ) ) );
 		$this->add_component( 'scripts', new Admin\Scripts( $this->get_filesystem( 'dist' ) ) );
 		$this->add_component( 'admin/settings', new Admin\Settings() );
 	}
