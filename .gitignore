@@ -1,5 +1,6 @@
 ### Project ###
 composer.lock
+yarn.lock
 *.log
 node_modules/
 resources/*/dist/
