@@ -32,5 +32,10 @@
 		"imposter": {
 			"namespace": "BracketSpace\\Notification\\XXNAMESPACEXX\\Vendor"
 		}
+	},
+	"config": {
+		"optimize-autoloader": true,
+		"preferred-install": "dist",
+		"sort-packages": true
 	}
 }
