@@ -1,0 +1,39 @@
+includes:
+	- vendor/szepeviktor/phpstan-wordpress/extension.neon
+parameters:
+	level: max
+	inferPrivatePropertyTypeFromConstructor: true
+	treatPhpDocTypesAsCertain: false
+	scanFiles:
+		- compat/notification-stubs.php
+		- vendor/php-stubs/wp-cli-stubs/wp-cli-stubs.php
+	paths:
+		- notification-slug-namexx.php
+		- load.php
+		- uninstall.php
+		- src/
+	typeAliases:
+		NotificationData: '''
+			array{
+				hash?: string,
+				title?: string,
+				trigger?: BracketSpace\Notification\Interfaces\Triggerable,
+				carriers?: array<string,BracketSpace\Notification\Interfaces\Sendable>,
+				enabled?: bool,
+				extras?: array<string, array<mixed>|bool|float|int|string>,
+				version?: int,
+			}
+		'''
+		NotificationUnconvertedData: '''
+			array{
+				hash?: string,
+				title?: string,
+				trigger?: BracketSpace\Notification\Interfaces\Triggerable|string,
+				carriers?: array<string,BracketSpace\Notification\Interfaces\Sendable|array<string,mixed>>,
+				enabled?: bool,
+				extras?: array<string, array<mixed>|bool|float|int|string>,
+				version?: int,
+			}
+		'''
+	excludePaths:
+		- dependencies/
