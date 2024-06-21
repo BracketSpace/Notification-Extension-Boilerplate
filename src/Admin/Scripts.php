@@ -5,6 +5,8 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Admin;
 
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
@@ -12,8 +14,8 @@ use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Files
 /**
  * Scripts class
  */
-class Scripts {
-
+class Scripts
+{
 	/**
 	 * Filesystem object
 	 *
@@ -27,7 +29,8 @@ class Scripts {
 	 * @since [Next]
 	 * @param Filesystem $fs Assets filesystem object.
 	 */
-	public function __construct( Filesystem $fs ) {
+	public function __construct(Filesystem $fs)
+	{
 		$this->filesystem = $fs;
 	}
 
@@ -41,11 +44,12 @@ class Scripts {
 	 * @filter notification/scripts/allowed_hooks
 	 *
 	 * @since  [Next]
-	 * @param  array $page_hooks Page hooks.
+	 * @param  array $pageHooks Page hooks.
 	 * @return array
 	 */
-	public function add_screen( $page_hooks ) {
-		return $page_hooks;
+	public function addScreen($pageHooks)
+	{
+		return $pageHooks;
 	}
 
 	/**
@@ -53,37 +57,41 @@ class Scripts {
 	 *
 	 * @action notification/scripts
 	 *
-	 * @param  string $page_hook current page hook.
+	 * @param  string $pageHook current page hook.
 	 * @return void
 	 */
-	public function enqueue_scripts( $page_hook ) {
+	public function enqueueScripts($pageHook)
+	{
 		wp_enqueue_style(
 			'notification-slug-namexx',
-			$this->filesystem->url( 'resources/css/dist/style.css' ),
+			$this->filesystem->url('resources/css/dist/style.css'),
 			[],
-			$this->filesystem->mtime( 'resources/css/dist/style.css' )
+			$this->filesystem->mtime('resources/css/dist/style.css')
 		);
 
-		if ( $this->filesystem->exists( 'resources/js/dist/script.asset.php' ) ) {
-			$script_data  = require $this->filesystem->path( 'resources/js/dist/script.asset.php' );
-			$dependencies = $script_data['dependencies'];
-			$version      = $script_data['version'];
+		if ($this->filesystem->exists('resources/js/dist/script.asset.php')) {
+			$scriptData = require $this->filesystem->path('resources/js/dist/script.asset.php');
+			$dependencies = $scriptData['dependencies'];
+			$version = $scriptData['version'];
 		} else {
 			$dependencies = [];
-			$version      = $this->filesystem->mtime( 'resources/js/dist/script.js' );
+			$version = $this->filesystem->mtime('resources/js/dist/script.js');
 		}
 
 		wp_enqueue_script(
 			'notification-slug-namexx',
-			$this->filesystem->url( 'resources/js/dist/script.js' ),
+			$this->filesystem->url('resources/js/dist/script.js'),
 			$dependencies,
 			$version,
 			true
 		);
 
-		wp_localize_script( 'notification-slug-namexx', 'notification_slug_namexx', [
-			'ajaxurl' => admin_url( 'admin-ajax.php' ),
-		] );
+		wp_localize_script(
+			'notification-slug-namexx',
+			'notificationSlugNamexx',
+			[
+				'ajaxurl' => admin_url('admin-ajax.php'),
+			]
+		);
 	}
-
 }

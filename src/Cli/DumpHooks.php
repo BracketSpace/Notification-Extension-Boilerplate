@@ -9,6 +9,8 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Cli;
 
 use NotificationXXNAMESPACEXX as MainClass;
@@ -17,51 +19,56 @@ use WP_CLI;
 /**
  * Dump all hooks
  */
-class DumpHooks {
-
+class DumpHooks
+{
 	/**
 	 * Dump all the Dochooks.
 	 *
 	 * @param list<string> $args Arguments.
 	 * @return void
 	 */
-	public function __invoke( $args ) {
-
-		$runtime    = MainClass::runtime();
-		$filesystem = $runtime->get_filesystem();
-		$hooks_file = 'compat/register-hooks.php';
+	public function __invoke($args)
+	{
+		$runtime = MainClass::runtime();
+		$filesystem = $runtime->getFilesystem();
+		$hooksFile = 'compat/register-hooks.php';
 
 		// Build an array of searchable instances.
 		$objects = [];
-		foreach ( MainClass::components() as $component_name => $instance ) {
-			if ( is_object( $instance ) ) {
-				$objects[ $component_name ] = get_class( $instance );
+		foreach (MainClass::components() as $componentName => $instance) {
+			if (! is_object($instance)) {
+				continue;
 			}
+
+			$objects[$componentName] = get_class($instance);
 		}
 
-		$hook_functions = [];
+		$hookFunctions = [];
 
 		// Loop over each class registering hooks.
-		foreach ( $runtime->get_calls() as $class_name => $hooks ) {
+		foreach ($runtime->get_calls() as $className => $hooks) {
 			$count = 0;
 
-			if ( 'BracketSpace\\Notification\\XXNAMESPACEXX\\Runtime' === $class_name ) {
-				$callback_object_name = '$this';
+			if ($className === 'BracketSpace\\Notification\\XXNAMESPACEXX\\Runtime') {
+				$callbackObjectName = '$this';
 			} else {
-				$component_name = array_search( $class_name, $objects, true );
-				if ( ! $component_name ) {
-					WP_CLI::warning( str_replace( 'BracketSpace\\Notification\\XXNAMESPACEXX\\', '', $class_name ) . ' skipped, no instance available' );
+				$componentName = array_search($className, $objects, true);
+				if (! $componentName) {
+					WP_CLI::warning(
+						str_replace('BracketSpace\\Notification\\XXNAMESPACEXX\\', '', $className) .
+						' skipped, no instance available'
+					);
 					continue;
 				}
-				$callback_object_name = "\$this->component( '" . $component_name . "' )";
+				$callbackObjectName = "\$this->component('" . $componentName . "')";
 			}
 
-			foreach ( $hooks as $hook ) {
-				$hook_functions[] = sprintf(
-					"add_%s( '%s', [ %s, '%s' ], %d, %d );",
+			foreach ($hooks as $hook) {
+				$hookFunctions[] = sprintf(
+					"add_%s('%s', [%s, '%s'], %d, %d);",
 					$hook['type'],
 					$hook['name'],
-					$callback_object_name,
+					$callbackObjectName,
 					$hook['callback'],
 					$hook['priority'],
 					$hook['arg_count']
@@ -70,15 +77,18 @@ class DumpHooks {
 				$count++;
 			}
 
-			WP_CLI::log( str_replace( 'BracketSpace\\Notification\\XXNAMESPACEXX\\', '', $class_name ) . ' added ' . $count . ' hooks' );
+			WP_CLI::log(
+				str_replace('BracketSpace\\Notification\\XXNAMESPACEXX\\', '', $className)
+				. ' added ' . $count . ' hooks'
+			);
 		}
 
 		// Clear the hooks file.
-		if ( $filesystem->exists( $hooks_file ) ) {
-			$filesystem->delete( $hooks_file );
+		if ($filesystem->exists($hooksFile)) {
+			$filesystem->delete($hooksFile);
 		}
 
-		$file_header = '<?php
+		$fileHeader = '<?php
 /**
  * Hooks compatibilty file.
  *
@@ -93,9 +103,8 @@ class DumpHooks {
 ';
 
 		// Save the content.
-		$filesystem->put_contents( $hooks_file, $file_header . implode( "\n", $hook_functions ) . "\n" );
+		$filesystem->put_contents($hooksFile, $fileHeader . implode("\n", $hookFunctions) . "\n");
 
-		WP_CLI::success( 'All hooks dumped!' );
+		WP_CLI::success('All hooks dumped!');
 	}
-
 }

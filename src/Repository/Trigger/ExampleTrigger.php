@@ -5,34 +5,35 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository\Trigger;
 
 use BracketSpace\Notification\Abstracts\Trigger as TriggerAbstract;
-use BracketSpace\Notification\Defaults\MergeTag;
+use BracketSpace\Notification\Repository\MergeTag;
 
 /**
  * ExampleTrigger Trigger
  */
-class ExampleTrigger extends TriggerAbstract {
-
+class ExampleTrigger extends TriggerAbstract
+{
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
-
+	public function __construct()
+	{
 		parent::__construct(
 			'slug-namexx/example_trigger',
-			__( 'Example Trigger', 'notification-slug-namexx' )
+			__('Example Trigger', 'notification-slug-namexx')
 		);
 
-		$this->add_action( 'any_action_hook' );
+		$this->addAction('any_action_hook');
 
-		$this->set_group( __( 'Nicenamexx', 'notification-slug-namexx' ) );
+		$this->setGroup(__('Nicenamexx', 'notification-slug-namexx'));
 
-		$this->set_description(
-			__( 'Fires when **put a description here**', 'notification-slug-namexx' )
+		$this->setDescription(
+			__('Fires when **put a description here**', 'notification-slug-namexx')
 		);
-
 	}
 
 	/**
@@ -41,7 +42,8 @@ class ExampleTrigger extends TriggerAbstract {
 	 * @since  [Next]
 	 * @return false|void False if no notifications should be sent
 	 */
-	public function context() {
+	public function context()
+	{
 		$this->prop = 'test';
 	}
 
@@ -51,14 +53,18 @@ class ExampleTrigger extends TriggerAbstract {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function merge_tags() {
-		$this->add_merge_tag( new MergeTag\StringTag( [
-			'slug'     => 'prop',
-			'name'     => __( 'Trigger property', 'notification-slug-namexx' ),
-			'resolver' => function ( $trigger ) {
-				return $trigger->prop;
-			},
-		] ) );
+	public function mergeTags()
+	{
+		$this->addMergeTag(
+			new MergeTag\StringTag(
+				[
+					'slug' => 'prop',
+					'name' => __('Trigger property', 'notification-slug-namexx'),
+					'resolver' => static function ( $trigger ) {
+						return $trigger->prop;
+					},
+				]
+			)
+		);
 	}
-
 }

@@ -5,6 +5,8 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX;
 
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Requirements\Requirements as RequirementsEngine;
@@ -16,8 +18,8 @@ use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Internationaliza
 /**
  * Runtime class
  */
-class Runtime {
-
+class Runtime
+{
 	use HookTrait;
 
 	/**
@@ -25,14 +27,14 @@ class Runtime {
 	 *
 	 * @var string
 	 */
-	protected $plugin_file;
+	protected $pluginFile;
 
 	/**
 	 * Flag for unmet requirements
 	 *
 	 * @var bool
 	 */
-	protected $requirements_unmet;
+	protected $requirementsUnmet;
 
 	/**
 	 * Filesystems
@@ -52,10 +54,11 @@ class Runtime {
 	 * Class constructor
 	 *
 	 * @since [Next]
-	 * @param string $plugin_file Plugin main file full path.
+	 * @param string $pluginFile Plugin main file full path.
 	 */
-	public function __construct( $plugin_file ) {
-		$this->plugin_file = $plugin_file;
+	public function __construct($pluginFile)
+	{
+		$this->pluginFile = $pluginFile;
 	}
 
 	/**
@@ -64,36 +67,38 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function init() {
-
+	public function init()
+	{
 		// Plugin has been already initialized.
-		if ( did_action( 'notification/slug-namexx/init' ) || $this->requirements_unmet ) {
+		if (did_action('notification/slug-namexx/init') || $this->requirementsUnmet) {
 			return;
 		}
 
 		// Requirements check.
-		$requirements = new RequirementsEngine( __( 'Notification : Nicenamexx', 'notification-slug-namexx' ), [
-			'php'          => '7.4',
-			'wp'           => '5.3',
-			'notification' => '9.0.0',
-		] );
+		$requirements = new RequirementsEngine(
+			__('Notification : Nicenamexx', 'notification-slug-namexx'),
+			[
+				'php' => '7.4',
+				'wp' => '5.3',
+				'notification' => '9.0.0',
+			]
+		);
 
-		$requirements->register_checker( Requirements\BasePlugin::class );
+		$requirements->register_checker(Requirements\BasePlugin::class);
 
-		if ( ! $requirements->satisfied() ) {
-			$requirements->print_notice();
-			$this->requirements_unmet = true;
+		if (! $requirements->satisfied()) {
+			$requirements->printNotice();
+			$this->requirementsUnmet = true;
 			return;
 		}
 
-		$this->filesystem = new Filesystem( dirname( $this->plugin_file ) );
-		Core\Templates::register_storage();
+		$this->filesystem = new Filesystem(dirname($this->pluginFile));
+		Core\Templates::registerStorage();
 		$this->singletons();
-		$this->cli_commands();
+		$this->cliCommands();
 		$this->actions();
 
-		do_action( 'notification/slug-namexx/init' );
-
+		do_action('notification/slug-namexx/init');
 	}
 
 	/**
@@ -102,12 +107,13 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function cli_commands() {
-		if ( ! defined( 'WP_CLI' ) || \WP_CLI !== true ) {
+	public function cliCommands()
+	{
+		if (! defined('WP_CLI') || \WP_CLI !== true) {
 			return;
 		}
 
-		\WP_CLI::add_command( 'notification-slug-namexx dump-hooks', Cli\DumpHooks::class );
+		\WP_CLI::add_command('notification-slug-namexx dump-hooks', Cli\DumpHooks::class);
 	}
 
 	/**
@@ -116,15 +122,18 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function register_hooks() {
+	public function registerHooks()
+	{
 		// Hook Runtime.
 		$this->add_hooks();
 
 		// Hook all the components.
-		foreach ( $this->components as $component ) {
-			if ( is_object( $component ) ) {
-				$this->add_hooks( $component );
+		foreach ($this->components as $component) {
+			if (! is_object($component)) {
+				continue;
 			}
+
+			$this->add_hooks($component);
 		}
 	}
 
@@ -134,7 +143,8 @@ class Runtime {
 	 * @since  [Next]
 	 * @return Filesystem|null
 	 */
-	public function get_filesystem() {
+	public function getFilesystem()
+	{
 		return $this->filesystem;
 	}
 
@@ -147,12 +157,13 @@ class Runtime {
 	 * @param  mixed  $component Component.
 	 * @return $this
 	 */
-	public function add_component( $name, $component ) {
-		if ( isset( $this->components[ $name ] ) ) {
-			throw new \Exception( sprintf( 'Component %s is already added.', $name ) );
+	public function addComponent($name, $component)
+	{
+		if (isset($this->components[$name])) {
+			throw new \Exception(sprintf('Component %s is already added.', $name));
 		}
 
-		$this->components[ $name ] = $component;
+		$this->components[$name] = $component;
 
 		return $this;
 	}
@@ -164,8 +175,9 @@ class Runtime {
 	 * @param  string $name Component name.
 	 * @return mixed        Component or null
 	 */
-	public function component( $name ) {
-		return isset( $this->components[ $name ] ) ? $this->components[ $name ] : null;
+	public function component($name)
+	{
+		return $this->components[$name] ?? null;
 	}
 
 	/**
@@ -174,7 +186,8 @@ class Runtime {
 	 * @since  [Next]
 	 * @return array
 	 */
-	public function components() {
+	public function components()
+	{
 		return $this->components;
 	}
 
@@ -185,10 +198,14 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function singletons() {
-		$this->add_component( 'i18n', new Internationalization( 'notification-slug-namexx', $this->get_filesystem()->path( 'resources/languages' ) ) );
-		$this->add_component( 'scripts', new Admin\Scripts( $this->get_filesystem( 'dist' ) ) );
-		$this->add_component( 'admin/settings', new Admin\Settings() );
+	public function singletons()
+	{
+		$this->addComponent(
+			'i18n',
+			new Internationalization('notification-slug-namexx', $this->getFilesystem()->path('resources/languages'))
+		);
+		$this->addComponent('scripts', new Admin\Scripts($this->getFilesystem('dist')));
+		$this->addComponent('admin/settings', new Admin\Settings());
 	}
 
 	/**
@@ -197,16 +214,16 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function actions() {
-		$this->register_hooks();
-
-		notification_register_settings( [ $this->component( 'admin/settings' ), 'register_trigger_settings' ], 20 );
-		notification_register_settings( [ $this->component( 'admin/settings' ), 'register_carrier_settings' ], 30 );
+	public function actions()
+	{
+		$this->registerHooks();
 
 		// DocHooks compatibility.
-		if ( ! DocHooksHelper::is_enabled() && $this->get_filesystem()->exists( 'compat/register-hooks.php' ) ) {
-			include_once $this->get_filesystem()->path( 'compat/register-hooks.php' );
+		if (DocHooksHelper::is_enabled() || !$this->getFilesystem()->exists('compat/register-hooks.php')) {
+			return;
 		}
+
+		include_once $this->getFilesystem()->path('compat/register-hooks.php');
 	}
 
 	/**
@@ -217,9 +234,10 @@ class Runtime {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function elements() {
+	public function elements()
+	{
 		array_map(
-			[ $this, 'load_element' ],
+			[$this, 'loadElement'],
 			[
 				'carriers',
 				'recipients',
@@ -238,15 +256,19 @@ class Runtime {
 	 *
 	 * @since  [Next]
 	 * @param  string       $element    Element name.
-	 * @param  class-string $class_name Element Registerer class name.
+	 * @param  class-string $className Element Registerer class name.
 	 * @return void
 	 */
-	public function load_element( $element, $class_name ) {
-		if ( apply_filters( 'notification/slug-namexx/load/element/' . $element, true ) ) {
-			if ( is_callable( [ $class_name, 'register' ] ) ) {
-				$class_name::register();
-			}
+	public function loadElement($element, $className)
+	{
+		if (! apply_filters('notification/slug-namexx/load/element/' . $element, true)) {
+			return;
 		}
-	}
 
+		if (! is_callable([$className, 'register'])) {
+			return;
+		}
+
+		$className::register();
+	}
 }

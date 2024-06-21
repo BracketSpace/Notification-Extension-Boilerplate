@@ -38,6 +38,13 @@ mv notification-slug-namexx.php "notification-${user_dash_slug}.php"
 mv resources/languages/notification-slug-namexx.pot "resources/languages/notification-${user_dash_slug}.pot"
 echo -e "${GREY}-- Success!${NC}"
 
+echo "Please, provide camelCase slug for your plugin, eg. myPlugin"
+echo "What is your plugin slug?"
+read user_camel_slug
+echo -e "${GREY}-- Replacing notificationSlugNamexx with ${user_camel_slug}...${NC}"
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./node_modules/*" -exec sed -i '' -e "s/notificationSlugNamexx/${user_camel_slug}/g" {} +
+echo -e "${GREY}-- Success!${NC}"
+
 echo -e "\n"
 
 echo "By default, namespace always looks like this BracketSpace\Notification\YourNamespace"

@@ -1,1 +1,1 @@
-/* global jQuery, notification-slug-namexx */
+/* global jQuery, notificationSlugNamexx */

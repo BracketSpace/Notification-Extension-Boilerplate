@@ -5,23 +5,26 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Repository\Trigger;
 use BracketSpace\Notification\Register;
 
 /**
  * Trigger Repository.
  */
-class TriggerRepository {
-
+class TriggerRepository
+{
 	/**
 	 * @return void
 	 */
-	public static function register() {
-		if ( notification_get_setting( 'triggers/slug-namexx/enable' ) ) {
-			Register::trigger( new Trigger\ExampleTrigger() );
+	public static function register()
+	{
+		if (! \Notification::settings()->getSetting('triggers/slug-namexx/enable')) {
+			return;
 		}
-	}
 
+		Register::trigger(new Trigger\ExampleTrigger());
+	}
 }

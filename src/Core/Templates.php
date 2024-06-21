@@ -5,6 +5,8 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Core;
 
 use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Storage;
@@ -13,8 +15,8 @@ use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Templa
 /**
  * Templates class
  */
-class Templates {
-
+class Templates
+{
 	/**
 	 * Templates storage name.
 	 */
@@ -28,8 +30,9 @@ class Templates {
 	 * @param  array<mixed> $vars Template variables.
 	 * @return void
 	 */
-	public static function render( string $name, array $vars = [] ) {
-		self::create( $name, $vars )->render();
+	public static function render(string $name, array $vars = [])
+	{
+		self::create($name, $vars)->render();
 	}
 
 	/**
@@ -40,8 +43,9 @@ class Templates {
 	 * @param  array<mixed> $vars Template variables.
 	 * @return string
 	 */
-	public static function get( string $name, array $vars = [] ) {
-		return self::create( $name, $vars )->output();
+	public static function get(string $name, array $vars = [])
+	{
+		return self::create($name, $vars)->output();
 	}
 
 	/**
@@ -52,8 +56,9 @@ class Templates {
 	 * @param  array<mixed> $vars Template variables.
 	 * @return Template
 	 */
-	public static function create( string $name, array $vars = [] ) : Template {
-		return new Template( self::TEMPLATE_STORAGE, $name, $vars );
+	public static function create(string $name, array $vars = []): Template
+	{
+		return new Template(self::TEMPLATE_STORAGE, $name, $vars);
 	}
 
 	/**
@@ -62,8 +67,8 @@ class Templates {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public static function register_storage() {
-		Storage::add( self::TEMPLATE_STORAGE, \NotificationXXNAMESPACEXX::fs()->path( 'resources/templates' ) );
+	public static function registerStorage()
+	{
+		Storage::add(self::TEMPLATE_STORAGE, \NotificationXXNAMESPACEXX::fs()->path('resources/templates'));
 	}
-
 }

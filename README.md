@@ -1,4 +1,4 @@
-# Notification v8 Extension Boilerplate
+# Notification v9 Extension Boilerplate
 
 This is a starter for any [Notification plugin](https://wordpress.org/plugins/notification/) extension.
 

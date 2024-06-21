@@ -5,24 +5,27 @@
  * @package notification/slug-namexx
  */
 
+declare(strict_types=1);
+
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository\Carrier;
 
 use BracketSpace\Notification\Abstracts;
-use BracketSpace\Notification\Defaults\Field;
+use BracketSpace\Notification\Repository\Field;
 use BracketSpace\Notification\Interfaces\Triggerable;
 
 /**
  * ExampleCarrier Carrier
  */
-class ExampleCarrier extends Abstracts\Carrier {
-
+class ExampleCarrier extends Abstracts\Carrier
+{
 	/**
 	 * Carrier constructor
 	 *
 	 * @since [Next]
 	 */
-	public function __construct() {
-		parent::__construct( 'example-carrier', __( 'Example Carrier', 'notification-slug-namexx' ) );
+	public function __construct()
+	{
+		parent::__construct('example-carrier', __('Example Carrier', 'notification-slug-namexx'));
 	}
 
 	/**
@@ -32,13 +35,18 @@ class ExampleCarrier extends Abstracts\Carrier {
 	 * @since  [Next]
 	 * @return void
 	 */
-	public function form_fields() {
-		$this->add_form_field( new Field\InputField( [
-			'label' => __( 'Subject', 'notification-slug-namexx' ),
-			'name'  => 'subject',
-		] ) );
+	public function formFields()
+	{
+		$this->addFormField(
+			new Field\InputField(
+				[
+					'label' => __('Subject', 'notification-slug-namexx'),
+					'name' => 'subject',
+				]
+			)
+		);
 
-		$this->add_recipients_field();
+		$this->addRecipientsField();
 	}
 
 	/**
@@ -48,9 +56,16 @@ class ExampleCarrier extends Abstracts\Carrier {
 	 * @param  Triggerable $trigger trigger object.
 	 * @return void
 	 */
-	public function send( Triggerable $trigger ) {
+	public function send(Triggerable $trigger)
+	{
 		$data = $this->data;
-		file_put_contents( dirname( __FILE__ ) . '/data.log', print_r( $data, true ) . "\r\n\r\n", FILE_APPEND ); // phpcs:ignore
-	}
 
+		// phpcs:disable
+		file_put_contents(
+			dirname(__FILE__) . '/data.log',
+			print_r($data, true) . "\r\n\r\n",
+			FILE_APPEND
+		);
+		// phpcs:enable
+	}
 }
