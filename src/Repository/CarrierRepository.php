@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\DocHooks\Helper as DocHooksHelper;
 use BracketSpace\Notification\Register;
 
 /**

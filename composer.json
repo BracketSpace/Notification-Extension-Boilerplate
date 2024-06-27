@@ -5,22 +5,43 @@
 		"phpcbf": "phpcbf",
 		"phpcs": "phpcs",
 		"phplint": "parallel-lint --exclude node_modules --exclude vendor --exclude dependencies .",
-		"phpstan": "phpstan analyze --memory-limit=-1"
+		"phpstan": "phpstan analyze --memory-limit=-1",
+		"prefix-namespaces-dev": [
+			"strauss",
+			"composer dump-autoload"
+		],
+		"prefix-namespaces-prod": [
+			"strauss --deleteVendorPackages=true",
+			"composer dump-autoload",
+			"rm -r vendor/bin",
+			"rm -r vendor/brianhenryie",
+			"find vendor -type d -empty -delete"
+		],
+		"post-install-cmd": [
+			"@prefix-namespaces-dev"
+		],
+		"post-update-cmd": [
+			"@prefix-namespaces-dev"
+		]
 	},
 	"autoload": {
 		"psr-4": {
 			"BracketSpace\\Notification\\XXNAMESPACEXX\\": "src/"
-		}
+		},
+		"classmap": [
+			"dependencies/"
+		]
 	},
 	"require": {
 		"php": "^7.4 | ^8.0",
+		"composer-runtime-api": "^2.0",
+		"brianhenryie/strauss": "^0.19.1",
 		"micropackage/ajax": "^1.0",
 		"micropackage/dochooks": "1.0.2",
 		"micropackage/filesystem": "^1.1",
 		"micropackage/internationalization": "^1.0",
 		"micropackage/requirements": "^1.0",
-		"micropackage/templates": "^1.1",
-		"typisttech/imposter-plugin": "^0.6.2"
+		"micropackage/templates": "^1.1"
 	},
 	"require-dev": {
 		"dealerdirect/phpcodesniffer-composer-installer": "^0.7",
@@ -32,8 +53,10 @@
 		"szepeviktor/phpstan-wordpress": "^1.3"
 	},
 	"extra": {
-		"imposter": {
-			"namespace": "BracketSpace\\Notification\\XXNAMESPACEXX\\Vendor"
+		"strauss": {
+			"namespace_prefix": "BracketSpace\\Notification\\XXNAMESPACEXX\\Dependencies\\",
+			"target_directory": "dependencies",
+			"classmap_prefix": "BracketSpace_Notification_XXNAMESPACEXX_Dependencies_"
 		}
 	},
 	"config": {

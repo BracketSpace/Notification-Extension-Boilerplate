@@ -9,8 +9,8 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Core;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Storage;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Templates\Template;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Templates\Storage;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Templates\Template;
 
 /**
  * Templates class

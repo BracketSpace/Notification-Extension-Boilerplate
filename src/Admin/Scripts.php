@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Admin;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Filesystem\Filesystem;
 
 /**
  * Scripts class

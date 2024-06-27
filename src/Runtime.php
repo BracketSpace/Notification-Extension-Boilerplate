@@ -9,11 +9,11 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Requirements\Requirements as RequirementsEngine;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\HookTrait;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\DocHooks\Helper as DocHooksHelper;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem;
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Internationalization\Internationalization;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Requirements\Requirements as RequirementsEngine;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\DocHooks\HookTrait;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\DocHooks\Helper as DocHooksHelper;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Filesystem\Filesystem;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Internationalization\Internationalization;
 
 /**
  * Runtime class

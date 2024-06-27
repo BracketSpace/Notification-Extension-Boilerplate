@@ -9,7 +9,7 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Requirements;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Requirements;
+use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Requirements;
 
 /**
  * BasePlugin checker
