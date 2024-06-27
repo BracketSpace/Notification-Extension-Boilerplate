@@ -17,6 +17,8 @@ use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Internatio
 
 /**
  * Runtime class
+ *
+ * @since  [Next]
  */
 class Runtime
 {
@@ -46,14 +48,13 @@ class Runtime
 	/**
 	 * Components
 	 *
-	 * @var array<string,mixed>
+	 * @var array<class-string,mixed>
 	 */
 	protected $components = [];
 
 	/**
 	 * Class constructor
 	 *
-	 * @since [Next]
 	 * @param string $pluginFile Plugin main file full path.
 	 */
 	public function __construct($pluginFile)
@@ -64,7 +65,6 @@ class Runtime
 	/**
 	 * Loads needed files
 	 *
-	 * @since  [Next]
 	 * @return void
 	 */
 	public function init()
@@ -104,7 +104,6 @@ class Runtime
 	/**
 	 * Registers WP CLI commands
 	 *
-	 * @since  [Next]
 	 * @return void
 	 */
 	public function cliCommands()
@@ -119,7 +118,6 @@ class Runtime
 	/**
 	 * Registers all the hooks with DocHooks
 	 *
-	 * @since  [Next]
 	 * @return void
 	 */
 	public function registerHooks()
@@ -140,7 +138,6 @@ class Runtime
 	/**
 	 * Gets filesystem
 	 *
-	 * @since  [Next]
 	 * @return Filesystem|null
 	 */
 	public function getFilesystem()
@@ -151,14 +148,18 @@ class Runtime
 	/**
 	 * Adds runtime component
 	 *
-	 * @since  [Next]
 	 * @throws \Exception When component is already registered.
-	 * @param  string $name      Component name.
-	 * @param  mixed  $component Component.
+	 * @param mixed $component Component.
 	 * @return $this
 	 */
-	public function addComponent($name, $component)
+	public function addComponent($component)
 	{
+		if (! is_object($component)) {
+			throw new \Exception('Component has to be an object.');
+		}
+
+		$name = get_class($component);
+
 		if (isset($this->components[$name])) {
 			throw new \Exception(sprintf('Component %s is already added.', $name));
 		}
@@ -171,9 +172,8 @@ class Runtime
 	/**
 	 * Gets runtime component
 	 *
-	 * @since  [Next]
-	 * @param  string $name Component name.
-	 * @return mixed        Component or null
+	 * @param string $name Component name.
+	 * @return mixed       Component or null
 	 */
 	public function component($name)
 	{
@@ -183,7 +183,6 @@ class Runtime
 	/**
 	 * Gets runtime components
 	 *
-	 * @since  [Next]
 	 * @return array
 	 */
 	public function components()
@@ -195,23 +194,20 @@ class Runtime
 	 * Creates needed classes
 	 * Singletons are used for a sake of performance
 	 *
-	 * @since  [Next]
 	 * @return void
 	 */
 	public function singletons()
 	{
 		$this->addComponent(
-			'i18n',
 			new Internationalization('notification-slug-namexx', $this->getFilesystem()->path('resources/languages'))
 		);
-		$this->addComponent('scripts', new Admin\Scripts($this->getFilesystem('dist')));
-		$this->addComponent('admin/settings', new Admin\Settings());
+		$this->addComponent(new Admin\Scripts($this->getFilesystem('dist')));
+		$this->addComponent(new Admin\Settings());
 	}
 
 	/**
 	 * All WordPress actions this plugin utilizes
 	 *
-	 * @since  [Next]
 	 * @return void
 	 */
 	public function actions()
