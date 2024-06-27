@@ -9,14 +9,14 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository\Carrier;
 
-use BracketSpace\Notification\Abstracts;
+use BracketSpace\Notification\Repository\Carrier\BaseCarrier;
 use BracketSpace\Notification\Repository\Field;
 use BracketSpace\Notification\Interfaces\Triggerable;
 
 /**
  * ExampleCarrier Carrier
  */
-class ExampleCarrier extends Abstracts\Carrier
+class ExampleCarrier extends BaseCarrier
 {
 	/**
 	 * Carrier constructor

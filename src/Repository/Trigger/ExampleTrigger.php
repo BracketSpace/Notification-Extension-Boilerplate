@@ -9,13 +9,13 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository\Trigger;
 
-use BracketSpace\Notification\Abstracts\Trigger as TriggerAbstract;
+use BracketSpace\Notification\Repository\Trigger\BaseTrigger;
 use BracketSpace\Notification\Repository\MergeTag;
 
 /**
  * ExampleTrigger Trigger
  */
-class ExampleTrigger extends TriggerAbstract
+class ExampleTrigger extends BaseTrigger
 {
 	/**
 	 * Constructor
