@@ -1,0 +1,92 @@
+name: Test
+
+on: push
+
+jobs:
+	phpcs:
+		name: PHP Coding Standards
+		runs-on: ubuntu-latest
+		strategy:
+			matrix:
+				php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
+			- name: Setup PHP
+				uses: shivammathur/setup-php@v2
+				with:
+					php-version: ${{ matrix.php }}
+					extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, mysqli, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, imagick
+					coverage: none
+			- name: Install Composer dependencies
+				uses: "ramsey/composer-install@v2"
+			- name: Coding Standards
+				run: composer phpcs
+	phpstan:
+		name: PHPStan
+		runs-on: ubuntu-latest
+		strategy:
+			matrix:
+				php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
+			- name: Setup PHP
+				uses: shivammathur/setup-php@v2
+				with:
+					php-version: ${{ matrix.php }}
+					extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, mysqli, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, imagick
+					coverage: none
+			- name: Install Composer dependencies
+				uses: "ramsey/composer-install@v2"
+			- name: Analyze
+				run: composer phpstan
+	phplint:
+		name: PHP Lint
+		runs-on: ubuntu-latest
+		strategy:
+			matrix:
+				php: ['7.4', '8.0', '8.1', '8.2', '8.3']
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
+			- name: Setup PHP
+				uses: shivammathur/setup-php@v2
+				with:
+					php-version: ${{ matrix.php }}
+					extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, mysql, mysqli, pdo_mysql, bcmath, soap, intl, gd, exif, iconv, imagick
+					coverage: none
+			- name: Install Composer dependencies
+				uses: "ramsey/composer-install@v2"
+			- name: Lint
+				run: composer phplint
+	css:
+		name: CSS Lint
+		runs-on: ubuntu-latest
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
+			- name: Setup Node
+				uses: actions/setup-node@v4
+				with:
+					node-version: '16'
+					cache: yarn
+			- name: Install yarn dependencies
+				run: yarn install --immutable
+			- name: CSS lint
+				run: yarn lint:css
+	js:
+		name: JS Lint
+		runs-on: ubuntu-latest
+		steps:
+			- name: Checkout
+				uses: actions/checkout@v2
+			- name: Setup Node
+				uses: actions/setup-node@v4
+				with:
+					node-version: '16'
+					cache: yarn
+			- name: Install yarn dependencies
+				run: yarn install --immutable
+			- name: JS lint
+				run: yarn lint:js
