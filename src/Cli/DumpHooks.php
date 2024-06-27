@@ -92,7 +92,7 @@ class DumpHooks
 /**
  * Hooks compatibilty file.
  *
- * Automatically generated with `wp notification dump-hooks`.
+ * Automatically generated with `wp notification-slug-namexx dump-hooks`.
  *
  * @package notification/slug-namexx
  */
