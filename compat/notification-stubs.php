@@ -265,6 +265,669 @@ namespace BracketSpace\Notification\Database\Queries {
         }
     }
 }
+namespace BracketSpace\Notification\Interfaces {
+    /**
+     * Nameable interface
+     */
+    interface Nameable
+    {
+        /**
+         * Gets name
+         *
+         * @return string name
+         */
+        public function getName();
+        /**
+         * Gets slug
+         *
+         * @return string slug
+         */
+        public function getSlug();
+    }
+    /**
+     * Sendable interface
+     */
+    interface Sendable extends \BracketSpace\Notification\Interfaces\Nameable
+    {
+        /**
+         * Activates the Carrier
+         *
+         * @return $this
+         */
+        public function activate();
+        /**
+         * Sends the carrier
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
+         * @return void
+         */
+        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
+        /**
+         * Generates an unique hash for carrier instance
+         *
+         * @return string
+         */
+        public function hash();
+        /**
+         * Gets form fields array
+         *
+         * @return array<\BracketSpace\Notification\Interfaces\Fillable> fields
+         */
+        public function getFormFields();
+        /**
+         * Checks if Carrier is enabled
+         *
+         * @return bool
+         */
+        public function isEnabled();
+        /**
+         * Checks if Carrier is active
+         *
+         * @return bool
+         */
+        public function isActive();
+        /**
+         * Sets data from array
+         *
+         * @param array<string,mixed> $data Data with keys matched with Field names.
+         * @return $this
+         */
+        public function setData($data);
+        /**
+         * Gets data
+         *
+         * @return array<string,mixed>
+         */
+        public function getData();
+        /**
+         * Enables the Carrier
+         *
+         * @return $this
+         */
+        public function enable();
+        /**
+         * Disables the Carrier
+         *
+         * @return $this
+         */
+        public function disable();
+        /**
+         * Gets form fields array
+         *
+         * @param string $fieldName Field name.
+         * @return mixed              Field object or null.
+         */
+        public function getFormField($fieldName);
+        /**
+         * Gets the saved recipients
+         *
+         * @return array<mixed>
+         */
+        public function getRecipients();
+        /**
+         * Gets field value
+         *
+         * @param string $fieldSlug field slug.
+         * @return mixed            value or null if field not available
+         */
+        public function getFieldValue($fieldSlug);
+        /**
+         * Gets the recipients field
+         * Calls the field closure.
+         *
+         * @return \BracketSpace\Notification\Repository\Field\RecipientsField|null
+         * @since  8.0.0
+         */
+        public function getRecipientsField();
+        /**
+         * Checks if the recipients field was added
+         *
+         * @return bool
+         * @since  8.0.0
+         */
+        public function hasRecipientsField();
+    }
+}
+namespace BracketSpace\Notification\Traits {
+    /**
+     * ClassUtils trait
+     */
+    trait ClassUtils
+    {
+        /**
+         * Get short class name without namespace
+         *
+         * @return string
+         */
+        public function getShortClassName()
+        {
+        }
+        /**
+         * Get nice class names with title case and spaces
+         *
+         * @return string
+         */
+        public function getNiceClassName()
+        {
+        }
+        /**
+         * Get class slug with dash separators
+         *
+         * @return string
+         */
+        public function getClassSlug()
+        {
+        }
+    }
+    /**
+     * HasName trait
+     */
+    trait HasName
+    {
+        /**
+         * Human readable, translated name
+         *
+         * @var string
+         */
+        protected $name;
+        /**
+         * Gets name
+         *
+         * If the name is not set, automatically generated
+         * one is used with title case and spaces.
+         *
+         * @return string name
+         */
+        public function getName()
+        {
+        }
+        /**
+         * Sets name
+         *
+         * @param string $name Name.
+         * @return $this
+         */
+        public function setName(string $name)
+        {
+        }
+    }
+    /**
+     * HasSlug trait
+     */
+    trait HasSlug
+    {
+        /**
+         * Object slug
+         *
+         * @var string
+         */
+        protected $slug;
+        /**
+         * Gets slug
+         *
+         * If the slug is not set, automatically generated
+         * one is used with words separated by `-`.
+         *
+         * @return string slug
+         */
+        public function getSlug()
+        {
+        }
+        /**
+         * Sets slug
+         *
+         * @param string $slug Slug.
+         * @return $this
+         */
+        public function setSlug(string $slug)
+        {
+        }
+    }
+}
+namespace BracketSpace\Notification\Repository\Carrier {
+    /**
+     * Carrier abstract class
+     */
+    abstract class BaseCarrier implements \BracketSpace\Notification\Interfaces\Sendable
+    {
+        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
+        use \BracketSpace\Notification\Traits\ClassUtils;
+        use \BracketSpace\Notification\Traits\HasName;
+        use \BracketSpace\Notification\Traits\HasSlug;
+        /**
+         * Form fields
+         *
+         * @var array<Interfaces\Fillable>
+         */
+        public $formFields = [];
+        /**
+         * Recipients form field closure
+         *
+         * @var callable(): \BracketSpace\Notification\Repository\Field\RecipientsField|null
+         */
+        protected $recipientsField;
+        /**
+         * Recipients form field index
+         *
+         * @var int
+         */
+        public $recipientsFieldIndex = 0;
+        /**
+         * Recipients form field raw data
+         *
+         * @var mixed
+         */
+        public $recipientsData;
+        /**
+         * Recipients form field resolved data
+         *
+         * @var array<mixed>
+         */
+        public $recipientsResolvedData;
+        /**
+         * Fields data for send method
+         *
+         * @var array<mixed>
+         */
+        public $data = [];
+        /**
+         * Restricted form field keys
+         *
+         * @var array<string>
+         */
+        public $restrictedFields = ['_nonce', 'activated', 'enabled'];
+        /**
+         * If is suppressed
+         *
+         * @var bool
+         */
+        protected $suppressed = false;
+        /**
+         * Carrier icon
+         *
+         * @var string SVG
+         */
+        //phpcs:ignore Generic.Files.LineLength.TooLong
+        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 143.3 152.5"><path d="M119.8,120.8V138a69.47,69.47,0,0,1-43.2,14.5q-32.4,0-55-22.2Q-1.05,108-1,75.9c0-15.6,3.9-29.2,11.8-40.7A82,82,0,0,1,40.7,8.3,74,74,0,0,1,75.6,0a71.79,71.79,0,0,1,31,6.6,69.31,69.31,0,0,1,25.3,21.8c6.9,9.6,10.4,21.2,10.4,34.8,0,13.8-3.3,25.5-9.9,35.3s-14.3,14.7-23.1,14.7c-10.6,0-16-6.9-16-20.6V82.3C93.3,63.4,86.4,54,72.5,54c-6.2,0-11.2,2.2-14.8,6.5a23.85,23.85,0,0,0-5.4,15.8,19.46,19.46,0,0,0,6.2,14.9,21.33,21.33,0,0,0,15.1,5.7,21.75,21.75,0,0,0,13.8-4.7v16.6a27.67,27.67,0,0,1-15.5,4.3q-15.3,0-25.8-10.2t-10.5-27c0-15.5,6.8-26.7,20.4-33.8a36.74,36.74,0,0,1,17.9-4.3c12.2,0,21.7,4.5,28.5,13.6,5.2,6.9,7.9,17.4,7.9,31.5v8.5c0,3.1,1,4.7,3,4.7,3,0,5.7-3.2,8.3-9.6A56.78,56.78,0,0,0,125.4,65q0-28.95-23.6-42.9h.2c-8.1-4.3-17.4-6.4-28.1-6.4a57.73,57.73,0,0,0-28.7,7.7A58.91,58.91,0,0,0,24,45.1a61.18,61.18,0,0,0-8.2,31.5c0,17.2,5.7,31.4,17,42.7s25.7,16.9,43,16.9c9.6,0,17.5-1.2,23.6-3.5S112.3,126.5,119.8,120.8Z" transform="translate(1)"/></svg>';
+        /**
+         * Carrier constructor
+         *
+         * @param string $slug Slug, optional.
+         * @param string $name Nice name, optional.
+         */
+        public function __construct($slug = null, $name = null)
+        {
+        }
+        /**
+         * Clone method
+         * Copies the fields to new Carrier instance
+         *
+         * @return void
+         * @since  5.1.6
+         */
+        public function __clone()
+        {
+        }
+        /**
+         * Used to register Carrier form fields
+         * Uses $this->addFormField();
+         *
+         * @return void
+         */
+        public function formFields()
+        {
+        }
+        /**
+         * Sends the Carrier
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
+         * @return void
+         */
+        public abstract function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
+        /**
+         * Generates an unique hash for Carrier instance
+         *
+         * @return string
+         */
+        public function hash()
+        {
+        }
+        /**
+         * Adds form field to collection
+         *
+         * @param \BracketSpace\Notification\Interfaces\Fillable $field Field object.
+         * @return $this
+         * @throws \Exception When restricted name is used.
+         * @since  6.0.0 Added restricted field check.
+         */
+        public function addFormField(\BracketSpace\Notification\Interfaces\Fillable $field)
+        {
+        }
+        /**
+         * Adds recipients form field
+         *
+         * @param array<mixed> $params Recipients field params.
+         * @return $this
+         * @throws \Exception When recipients fields was already added.
+         * @since  8.0.0
+         */
+        public function addRecipientsField(array $params = [])
+        {
+        }
+        /**
+         * Checks if the recipients field was added
+         *
+         * @return bool
+         * @since  8.0.0
+         */
+        public function hasRecipientsField()
+        {
+        }
+        /**
+         * Gets the recipients field
+         * Calls the field closure.
+         *
+         * @return \BracketSpace\Notification\Repository\Field\RecipientsField|null
+         * @since  8.0.0
+         */
+        public function getRecipientsField()
+        {
+        }
+        /**
+         * Gets the saved recipients
+         *
+         * @return mixed
+         */
+        public function getRecipients()
+        {
+        }
+        /**
+         * Gets form fields array
+         *
+         * @return array<\BracketSpace\Notification\Interfaces\Fillable> fields
+         */
+        public function getFormFields()
+        {
+        }
+        /**
+         * Gets form fields array
+         *
+         * @param string $fieldName Field name.
+         * @return Interfaces\Fillable|null Field object or null.
+         * @since  6.0.0
+         */
+        public function getFormField($fieldName)
+        {
+        }
+        /**
+         * Gets field value
+         *
+         * @param string $fieldSlug field slug.
+         * @return mixed              value or null if field not available
+         */
+        public function getFieldValue($fieldSlug)
+        {
+        }
+        /**
+         * Resolves all fields
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @return void
+         * @since  6.0.0
+         */
+        public function resolveFields(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+        /**
+         * Resolves Merge Tags in field value
+         *
+         * @param mixed $value String or array, field value.
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @return mixed
+         * @since 6.0.0
+         */
+        protected function resolveValue($value, \BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+        /**
+         * Prepares saved data for easy use in send() method
+         * Saves all the values in $data property
+         *
+         * @return void
+         * @since  5.0.0
+         */
+        public function prepareData()
+        {
+        }
+        /**
+         * Parses the recipients to a flat array.
+         *
+         * It needs recipients_resolved_data property so the
+         * resolve_fields method needs to be called beforehand.
+         *
+         * @return array<int,mixed>
+         * @since  8.0.0
+         */
+        public function parseRecipients()
+        {
+        }
+        /**
+         * Sets data from array
+         *
+         * @param array<mixed> $data Data with keys matched with Field names.
+         * @return $this
+         * @since  6.0.0
+         */
+        public function setData($data)
+        {
+        }
+        /**
+         * Sets field data
+         *
+         * @param \BracketSpace\Notification\Interfaces\Fillable $field Field.
+         * @param mixed $data Field data.
+         * @return void
+         * @since  8.0.0
+         */
+        protected function setFieldData(\BracketSpace\Notification\Interfaces\Fillable $field, $data)
+        {
+        }
+        /**
+         * Gets data
+         *
+         * @return array<string,mixed>
+         * @since  6.0.0
+         */
+        public function getData()
+        {
+        }
+        /**
+         * Checks if Carrier is active
+         *
+         * @return bool
+         * @since  6.3.0
+         */
+        public function isActive()
+        {
+        }
+        /**
+         * Activates the Carrier
+         *
+         * @return $this
+         * @since  6.3.0
+         */
+        public function activate()
+        {
+        }
+        /**
+         * Deactivates the Carrier
+         *
+         * @return $this
+         * @since  6.3.0
+         */
+        public function deactivate()
+        {
+        }
+        /**
+         * Checks if Carrier is enabled
+         *
+         * @return bool
+         * @since  6.0.0
+         */
+        public function isEnabled()
+        {
+        }
+        /**
+         * Enables the Carrier
+         *
+         * @return $this
+         * @since  6.0.0
+         */
+        public function enable()
+        {
+        }
+        /**
+         * Disables the Carrier
+         *
+         * @return $this
+         * @since  6.0.0
+         */
+        public function disable()
+        {
+        }
+        /**
+         * Checks if Carrier is suppressed
+         *
+         * @return bool
+         * @since  5.1.2
+         */
+        public function isSuppressed()
+        {
+        }
+        /**
+         * Suppresses the Carrier
+         *
+         * @return void
+         * @since  5.1.2
+         */
+        public function suppress()
+        {
+        }
+    }
+}
+namespace BracketSpace\Notification\Traits {
+    /**
+     * Webhook trait
+     *
+     * @deprecated [Next]
+     */
+    trait Webhook
+    {
+        /**
+         * Carrier constructor
+         *
+         * @param string $name Webhook nice name.
+         * @return void
+         * @since  7.0.0
+         */
+        public function __construct($name)
+        {
+        }
+        /**
+         * Makes http request
+         *
+         * @param string $url URL to call.
+         * @param array<mixed> $args Arguments. Default: empty.
+         * @param array<mixed> $headers Headers. Default: empty.
+         * @param string $method HTTP request method.
+         * @return void
+         * @since  7.0.0
+         */
+        public function httpRequest($url, $args = [], $headers = [], $method = 'GET')
+        {
+        }
+        /**
+         * Parses args to be understand by the wp_remote_* functions
+         *
+         * @param array<mixed> $args Args from saved fields.
+         * @return array<mixed>       Parsed args as key => value array
+         * @since  7.0.0
+         */
+        private function parseArgs($args)
+        {
+        }
+    }
+}
+namespace BracketSpace\Notification\Defaults\Carrier {
+    /**
+     * Webhook Carrier
+     *
+     * @deprecated [Next]
+     */
+    class Webhook extends \BracketSpace\Notification\Repository\Carrier\BaseCarrier
+    {
+        use \BracketSpace\Notification\Traits\Webhook;
+        /**
+         * Carrier icon
+         *
+         * @var string SVG
+         */
+        //phpcs:ignore Generic.Files.LineLength.TooLong
+        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.07 372.81"><path d="M100.7,239.8q23.25-38,46.9-76.5c-22.1-21.5-32.4-47.5-30.2-78,1.7-23.7,11.5-44,28.9-60.5C180-7,232.8-8.4,269,21.6c36.6,30.3,44.7,82.2,22.8,119.7-8.2-4.8-16.5-9.5-25.1-14.5,9.5-20.3,9.7-40.5-.5-60.5a63.54,63.54,0,0,0-34.4-31.1c-29.3-11.5-61.2.6-76.3,28.3-14.3,26.3-9.1,72,32.8,91.6-20.8,33.9-41.7,67.7-62.4,101.5,11.5,20,6.8,40.2-7.7,52.3-13,10.9-31.3,11.7-45.6,2.2A39.54,39.54,0,0,1,56.4,267C61.9,248.4,75.3,240.1,100.7,239.8Z" transform="translate(0.01 0.01)"/><path d="M90.9,184.8v28.9c-20.6,2.5-37.2,12.1-48.8,29.8-9,13.7-12.2,28.7-10.3,44.9a60.28,60.28,0,0,0,58.7,53.2c20.7.4,38-7.7,51.4-23.5s16.9-34.3,14.5-55.1H270.5c12.4-21.6,34-26.5,50.4-19.7a38.83,38.83,0,0,1,23.5,40.6c-2,16.7-15.6,31.2-32,33.9-18.9,3.2-34.1-5.5-43.3-24.9H186.4c-8.7,57.3-66.3,90.4-117.3,76.9-45.9-12.1-75.6-58-67.9-104.6C9.9,212.7,54.1,185,90.9,184.8Z" transform="translate(0.01 0.01)"/><path d="M212.7,132.1c-23.6-1.7-38-12.7-41.7-31.3a38.1,38.1,0,0,1,19.9-41.5A39.61,39.61,0,0,1,238,67.2c13.4,14.1,14,30.1,1.5,51.5q19.2,35.4,38.5,71.2c29.3-8.3,56.9-5.2,82.3,11.6,20,13.2,33.2,31.7,39,55a92.71,92.71,0,0,1-60.1,110c-47,16.2-94-6.4-113-40.9,8.2-4.8,16.5-9.6,24.7-14.3,25.6,36.5,69.8,35.9,94.6,17.6,25.2-18.6,33.1-52.5,17.8-79.5-9.8-17.2-24.7-27.7-44.1-31.8s-37,1.2-53.6,12.2C247.8,196.9,230.2,164.5,212.7,132.1Z" transform="translate(0.01 0.01)"/></svg>';
+        /**
+         * Used to register Carrier form fields
+         * Uses $this->addFormField();
+         *
+         * @return void
+         */
+        public function formFields()
+        {
+        }
+        /**
+         * Sends the notification
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
+         * @return void
+         */
+        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+    }
+    /**
+     * Webhook Carrier
+     *
+     * @deprecated [Next]
+     */
+    class WebhookJson extends \BracketSpace\Notification\Repository\Carrier\BaseCarrier
+    {
+        use \BracketSpace\Notification\Traits\Webhook;
+        /**
+         * Carrier icon
+         *
+         * @var string SVG
+         */
+        //phpcs:ignore Generic.Files.LineLength.TooLong
+        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.07 372.81"><path d="M100.7,239.8q23.25-38,46.9-76.5c-22.1-21.5-32.4-47.5-30.2-78,1.7-23.7,11.5-44,28.9-60.5C180-7,232.8-8.4,269,21.6c36.6,30.3,44.7,82.2,22.8,119.7-8.2-4.8-16.5-9.5-25.1-14.5,9.5-20.3,9.7-40.5-.5-60.5a63.54,63.54,0,0,0-34.4-31.1c-29.3-11.5-61.2.6-76.3,28.3-14.3,26.3-9.1,72,32.8,91.6-20.8,33.9-41.7,67.7-62.4,101.5,11.5,20,6.8,40.2-7.7,52.3-13,10.9-31.3,11.7-45.6,2.2A39.54,39.54,0,0,1,56.4,267C61.9,248.4,75.3,240.1,100.7,239.8Z" transform="translate(0.01 0.01)"/><path d="M90.9,184.8v28.9c-20.6,2.5-37.2,12.1-48.8,29.8-9,13.7-12.2,28.7-10.3,44.9a60.28,60.28,0,0,0,58.7,53.2c20.7.4,38-7.7,51.4-23.5s16.9-34.3,14.5-55.1H270.5c12.4-21.6,34-26.5,50.4-19.7a38.83,38.83,0,0,1,23.5,40.6c-2,16.7-15.6,31.2-32,33.9-18.9,3.2-34.1-5.5-43.3-24.9H186.4c-8.7,57.3-66.3,90.4-117.3,76.9-45.9-12.1-75.6-58-67.9-104.6C9.9,212.7,54.1,185,90.9,184.8Z" transform="translate(0.01 0.01)"/><path d="M212.7,132.1c-23.6-1.7-38-12.7-41.7-31.3a38.1,38.1,0,0,1,19.9-41.5A39.61,39.61,0,0,1,238,67.2c13.4,14.1,14,30.1,1.5,51.5q19.2,35.4,38.5,71.2c29.3-8.3,56.9-5.2,82.3,11.6,20,13.2,33.2,31.7,39,55a92.71,92.71,0,0,1-60.1,110c-47,16.2-94-6.4-113-40.9,8.2-4.8,16.5-9.6,24.7-14.3,25.6,36.5,69.8,35.9,94.6,17.6,25.2-18.6,33.1-52.5,17.8-79.5-9.8-17.2-24.7-27.7-44.1-31.8s-37,1.2-53.6,12.2C247.8,196.9,230.2,164.5,212.7,132.1Z" transform="translate(0.01 0.01)"/></svg>';
+        /**
+         * Used to register Carrier form fields
+         * Uses $this->addFormField();
+         *
+         * @return void
+         */
+        public function formFields()
+        {
+        }
+        /**
+         * Sends the notification
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
+         * @return void
+         */
+        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+    }
+}
 namespace BracketSpace\Notification\Utils\Cache {
     /**
      * Cache class
@@ -527,6 +1190,16 @@ namespace {
          * Gets plugin filesystem
          *
          * @since  8.0.0
+         * @throws \Exception When settings class wasn't invoked yet.
+         * @return BracketSpace\Notification\Core\Settings
+         */
+        public static function settings()
+        {
+        }
+        /**
+         * Gets plugin settings instance
+         *
+         * @since  [Next]
          * @throws \Exception When runtime wasn't invoked yet.
          * @return \BracketSpace\Notification\Dependencies\Micropackage\Filesystem\Filesystem
          */
@@ -535,1669 +1208,7 @@ namespace {
         }
     }
 }
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Nameable interface
-     */
-    interface Nameable
-    {
-        /**
-         * Gets name
-         *
-         * @return string name
-         */
-        public function getName();
-        /**
-         * Gets slug
-         *
-         * @return string slug
-         */
-        public function getSlug();
-    }
-    /**
-     * Sendable interface
-     */
-    interface Sendable extends \BracketSpace\Notification\Interfaces\Nameable
-    {
-        /**
-         * Activates the Carrier
-         *
-         * @return $this
-         */
-        public function activate();
-        /**
-         * Sends the carrier
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
-         * @return void
-         */
-        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
-        /**
-         * Generates an unique hash for carrier instance
-         *
-         * @return string
-         */
-        public function hash();
-        /**
-         * Gets form fields array
-         *
-         * @return array<\BracketSpace\Notification\Interfaces\Fillable> fields
-         */
-        public function getFormFields();
-        /**
-         * Checks if Carrier is enabled
-         *
-         * @return bool
-         */
-        public function isEnabled();
-        /**
-         * Checks if Carrier is active
-         *
-         * @return bool
-         */
-        public function isActive();
-        /**
-         * Sets data from array
-         *
-         * @param array<string,mixed> $data Data with keys matched with Field names.
-         * @return $this
-         */
-        public function setData($data);
-        /**
-         * Gets data
-         *
-         * @return array<string,mixed>
-         */
-        public function getData();
-        /**
-         * Enables the Carrier
-         *
-         * @return $this
-         */
-        public function enable();
-        /**
-         * Disables the Carrier
-         *
-         * @return $this
-         */
-        public function disable();
-        /**
-         * Gets form fields array
-         *
-         * @param string $fieldName Field name.
-         * @return mixed              Field object or null.
-         */
-        public function getFormField($fieldName);
-        /**
-         * Gets the saved recipients
-         *
-         * @return array<mixed>
-         */
-        public function getRecipients();
-        /**
-         * Gets field value
-         *
-         * @param string $fieldSlug field slug.
-         * @return mixed            value or null if field not available
-         */
-        public function getFieldValue($fieldSlug);
-        /**
-         * Gets the recipients field
-         * Calls the field closure.
-         *
-         * @return \BracketSpace\Notification\Repository\Field\RecipientsField|null
-         * @since  8.0.0
-         */
-        public function getRecipientsField();
-        /**
-         * Checks if the recipients field was added
-         *
-         * @return bool
-         * @since  8.0.0
-         */
-        public function hasRecipientsField();
-    }
-}
-namespace BracketSpace\Notification\Traits {
-    /**
-     * ClassUtils trait
-     */
-    trait ClassUtils
-    {
-        /**
-         * Get short class name without namespace
-         *
-         * @return string
-         */
-        public function getShortClassName()
-        {
-        }
-        /**
-         * Get nice class names with title case and spaces
-         *
-         * @return string
-         */
-        public function getNiceClassName()
-        {
-        }
-        /**
-         * Get class slug with dash separators
-         *
-         * @return string
-         */
-        public function getClassSlug()
-        {
-        }
-    }
-    /**
-     * HasName trait
-     */
-    trait HasName
-    {
-        /**
-         * Human readable, translated name
-         *
-         * @var string
-         */
-        protected $name;
-        /**
-         * Gets name
-         *
-         * If the name is not set, automatically generated
-         * one is used with title case and spaces.
-         *
-         * @return string name
-         */
-        public function getName()
-        {
-        }
-        /**
-         * Sets name
-         *
-         * @param string $name Name.
-         * @return $this
-         */
-        public function setName(string $name)
-        {
-        }
-    }
-    /**
-     * HasSlug trait
-     */
-    trait HasSlug
-    {
-        /**
-         * Object slug
-         *
-         * @var string
-         */
-        protected $slug;
-        /**
-         * Gets slug
-         *
-         * If the slug is not set, automatically generated
-         * one is used with words separated by `-`.
-         *
-         * @return string slug
-         */
-        public function getSlug()
-        {
-        }
-        /**
-         * Sets slug
-         *
-         * @param string $slug Slug.
-         * @return $this
-         */
-        public function setSlug(string $slug)
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * Carrier abstract class
-     */
-    abstract class Carrier implements \BracketSpace\Notification\Interfaces\Sendable
-    {
-        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
-        use \BracketSpace\Notification\Traits\ClassUtils;
-        use \BracketSpace\Notification\Traits\HasName;
-        use \BracketSpace\Notification\Traits\HasSlug;
-        /**
-         * Form fields
-         *
-         * @var array<mixed>
-         */
-        public $formFields = [];
-        /**
-         * Recipients form field closure
-         *
-         * @var callable(): \BracketSpace\Notification\Repository\Field\RecipientsField|null
-         */
-        protected $recipientsField;
-        /**
-         * Recipients form field index
-         *
-         * @var int
-         */
-        public $recipientsFieldIndex = 0;
-        /**
-         * Recipients form field raw data
-         *
-         * @var mixed
-         */
-        public $recipientsData;
-        /**
-         * Recipients form field resolved data
-         *
-         * @var mixed
-         */
-        public $recipientsResolvedData;
-        /**
-         * Fields data for send method
-         *
-         * @var array<mixed>
-         */
-        public $data = [];
-        /**
-         * Restricted form field keys
-         *
-         * @var array<mixed>
-         */
-        public $restrictedFields = ['_nonce', 'activated', 'enabled'];
-        /**
-         * If is suppressed
-         *
-         * @var bool
-         */
-        protected $suppressed = false;
-        /**
-         * Carrier icon
-         *
-         * @var string SVG
-         */
-        //phpcs:ignore Generic.Files.LineLength.TooLong
-        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 143.3 152.5"><path d="M119.8,120.8V138a69.47,69.47,0,0,1-43.2,14.5q-32.4,0-55-22.2Q-1.05,108-1,75.9c0-15.6,3.9-29.2,11.8-40.7A82,82,0,0,1,40.7,8.3,74,74,0,0,1,75.6,0a71.79,71.79,0,0,1,31,6.6,69.31,69.31,0,0,1,25.3,21.8c6.9,9.6,10.4,21.2,10.4,34.8,0,13.8-3.3,25.5-9.9,35.3s-14.3,14.7-23.1,14.7c-10.6,0-16-6.9-16-20.6V82.3C93.3,63.4,86.4,54,72.5,54c-6.2,0-11.2,2.2-14.8,6.5a23.85,23.85,0,0,0-5.4,15.8,19.46,19.46,0,0,0,6.2,14.9,21.33,21.33,0,0,0,15.1,5.7,21.75,21.75,0,0,0,13.8-4.7v16.6a27.67,27.67,0,0,1-15.5,4.3q-15.3,0-25.8-10.2t-10.5-27c0-15.5,6.8-26.7,20.4-33.8a36.74,36.74,0,0,1,17.9-4.3c12.2,0,21.7,4.5,28.5,13.6,5.2,6.9,7.9,17.4,7.9,31.5v8.5c0,3.1,1,4.7,3,4.7,3,0,5.7-3.2,8.3-9.6A56.78,56.78,0,0,0,125.4,65q0-28.95-23.6-42.9h.2c-8.1-4.3-17.4-6.4-28.1-6.4a57.73,57.73,0,0,0-28.7,7.7A58.91,58.91,0,0,0,24,45.1a61.18,61.18,0,0,0-8.2,31.5c0,17.2,5.7,31.4,17,42.7s25.7,16.9,43,16.9c9.6,0,17.5-1.2,23.6-3.5S112.3,126.5,119.8,120.8Z" transform="translate(1)"/></svg>';
-        /**
-         * Carrier constructor
-         *
-         * @param string $slug Slug, optional.
-         * @param string $name Nice name, optional.
-         */
-        public function __construct($slug = null, $name = null)
-        {
-        }
-        /**
-         * Clone method
-         * Copies the fields to new Carrier instance
-         *
-         * @return void
-         * @since  5.1.6
-         */
-        public function __clone()
-        {
-        }
-        /**
-         * Used to register Carrier form fields
-         * Uses $this->addFormField();
-         *
-         * @return void
-         */
-        public function formFields()
-        {
-        }
-        /**
-         * Sends the Carrier
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
-         * @return void
-         */
-        public abstract function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
-        /**
-         * Generates an unique hash for Carrier instance
-         *
-         * @return string
-         */
-        public function hash()
-        {
-        }
-        /**
-         * Adds form field to collection
-         *
-         * @param \BracketSpace\Notification\Interfaces\Fillable $field Field object.
-         * @return $this
-         * @throws \Exception When restricted name is used.
-         * @since  6.0.0 Added restricted field check.
-         */
-        public function addFormField(\BracketSpace\Notification\Interfaces\Fillable $field)
-        {
-        }
-        /**
-         * Adds recipients form field
-         *
-         * @param array<mixed> $params Recipients field params.
-         * @return $this
-         * @throws \Exception When recipients fields was already added.
-         * @since  8.0.0
-         */
-        public function addRecipientsField(array $params = [])
-        {
-        }
-        /**
-         * Checks if the recipients field was added
-         *
-         * @return bool
-         * @since  8.0.0
-         */
-        public function hasRecipientsField()
-        {
-        }
-        /**
-         * Gets the recipients field
-         * Calls the field closure.
-         *
-         * @return \BracketSpace\Notification\Repository\Field\RecipientsField|null
-         * @since  8.0.0
-         */
-        public function getRecipientsField()
-        {
-        }
-        /**
-         * Gets the saved recipients
-         *
-         * @return mixed
-         */
-        public function getRecipients()
-        {
-        }
-        /**
-         * Gets form fields array
-         *
-         * @return array<\BracketSpace\Notification\Interfaces\Fillable> fields
-         */
-        public function getFormFields()
-        {
-        }
-        /**
-         * Gets form fields array
-         *
-         * @param string $fieldName Field name.
-         * @return mixed              Field object or null.
-         * @since  6.0.0
-         */
-        public function getFormField($fieldName)
-        {
-        }
-        /**
-         * Gets field value
-         *
-         * @param string $fieldSlug field slug.
-         * @return mixed              value or null if field not available
-         */
-        public function getFieldValue($fieldSlug)
-        {
-        }
-        /**
-         * Resolves all fields
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @return void
-         * @since  6.0.0
-         */
-        public function resolveFields(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
-        {
-        }
-        /**
-         * Resolves Merge Tags in field value
-         *
-         * @param mixed $value String or array, field value.
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @return mixed
-         * @since 6.0.0
-         */
-        protected function resolveValue($value, \BracketSpace\Notification\Interfaces\Triggerable $trigger)
-        {
-        }
-        /**
-         * Prepares saved data for easy use in send() method
-         * Saves all the values in $data property
-         *
-         * @return void
-         * @since  5.0.0
-         */
-        public function prepareData()
-        {
-        }
-        /**
-         * Parses the recipients to a flat array.
-         *
-         * It needs recipients_resolved_data property so the
-         * resolve_fields method needs to be called beforehand.
-         *
-         * @return array<int,mixed>
-         * @since  8.0.0
-         */
-        public function parseRecipients()
-        {
-        }
-        /**
-         * Sets data from array
-         *
-         * @param array<mixed> $data Data with keys matched with Field names.
-         * @return $this
-         * @since  6.0.0
-         */
-        public function setData($data)
-        {
-        }
-        /**
-         * Sets field data
-         *
-         * @param \BracketSpace\Notification\Interfaces\Fillable $field Field.
-         * @param mixed $data Field data.
-         * @return void
-         * @since  8.0.0
-         */
-        protected function setFieldData(\BracketSpace\Notification\Interfaces\Fillable $field, $data)
-        {
-        }
-        /**
-         * Gets data
-         *
-         * @return array<string,mixed>
-         * @since  6.0.0
-         */
-        public function getData()
-        {
-        }
-        /**
-         * Checks if Carrier is active
-         *
-         * @return bool
-         * @since  6.3.0
-         */
-        public function isActive()
-        {
-        }
-        /**
-         * Activates the Carrier
-         *
-         * @return $this
-         * @since  6.3.0
-         */
-        public function activate()
-        {
-        }
-        /**
-         * Deactivates the Carrier
-         *
-         * @return $this
-         * @since  6.3.0
-         */
-        public function deactivate()
-        {
-        }
-        /**
-         * Checks if Carrier is enabled
-         *
-         * @return bool
-         * @since  6.0.0
-         */
-        public function isEnabled()
-        {
-        }
-        /**
-         * Enables the Carrier
-         *
-         * @return $this
-         * @since  6.0.0
-         */
-        public function enable()
-        {
-        }
-        /**
-         * Disables the Carrier
-         *
-         * @return $this
-         * @since  6.0.0
-         */
-        public function disable()
-        {
-        }
-        /**
-         * Checks if Carrier is suppressed
-         *
-         * @return bool
-         * @since  5.1.2
-         */
-        public function isSuppressed()
-        {
-        }
-        /**
-         * Suppresses the Carrier
-         *
-         * @return void
-         * @since  5.1.2
-         */
-        public function suppress()
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Fillable interface
-     */
-    interface Fillable
-    {
-        /**
-         * Gets field value
-         *
-         * @return mixed
-         */
-        public function getValue();
-        /**
-         * Sets field value
-         *
-         * @param mixed $value value from DB.
-         * @return void
-         */
-        public function setValue($value);
-        /**
-         * Gets field section name
-         *
-         * @return string
-         */
-        public function getSection();
-        /**
-         * Sets field section name
-         *
-         * @param string $value assigned value
-         * @return void
-         */
-        public function setSection($value);
-        /**
-         * Gets field name
-         *
-         * @return string
-         */
-        public function getName();
-        /**
-         * Gets raw field name
-         *
-         * @return string
-         */
-        public function getRawName();
-        /**
-         * Gets field label
-         *
-         * @return string
-         */
-        public function getLabel();
-        /**
-         * Gets field ID
-         *
-         * @return string
-         */
-        public function getId();
-        /**
-         * Gets field description
-         *
-         * @return string
-         */
-        public function getDescription();
-        /**
-         * Returns the additional field's css classes
-         *
-         * @return string
-         */
-        public function cssClass();
-        /**
-         * Checks if field should be resolved with merge tags
-         *
-         * @return bool
-         */
-        public function isResolvable();
-        /**
-         * Sanitizes the value sent by user
-         *
-         * @param mixed $value value to sanitize.
-         * @return mixed        sanitized value
-         */
-        public function sanitize($value);
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * Field abstract class
-     */
-    abstract class Field implements \BracketSpace\Notification\Interfaces\Fillable
-    {
-        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
-        /**
-         * Field unique ID
-         *
-         * @var string
-         */
-        public $id;
-        /**
-         * Field value
-         *
-         * @var mixed
-         */
-        public $value;
-        /**
-         * Field label
-         *
-         * @var mixed
-         */
-        protected $label;
-        /**
-         * Field name
-         *
-         * @var mixed
-         */
-        protected $name;
-        /**
-         * Short description
-         * Limited HTML support
-         *
-         * @var string
-         */
-        protected $description = '';
-        /**
-         * If field is resolvable with merge tags
-         * Default: true
-         *
-         * @var bool
-         */
-        protected $resolvable = true;
-        /**
-         * Field section name
-         *
-         * @var string
-         */
-        protected $section = '';
-        /**
-         * If field is disabled
-         *
-         * @var bool
-         */
-        public $disabled = false;
-        /**
-         * Additional css classes for field
-         *
-         * @var string
-         */
-        public $cssClass = 'widefat notification-field ';
-        // space here on purpose.
-        /**
-         * If field can be used multiple times in Section Repeater row
-         *
-         * @var bool
-         */
-        public $multipleSection = false;
-        /**
-         * Field type used in HTML attribute.
-         *
-         * @var string
-         */
-        public $fieldTypeHtml = '';
-        /**
-         * Field constructor
-         *
-         * @param array<mixed> $params field configuration params.
-         * @since 5.0.0
-         */
-        public function __construct($params = [])
-        {
-        }
-        /**
-         * Returns field data
-         *
-         * @param string $param Field data name.
-         * @return  array
-         * @since 7.0.0
-         */
-        public function __get($param)
-        {
-        }
-        /**
-         * Returns field HTML
-         *
-         * @return string html
-         */
-        public abstract function field();
-        /**
-         * Sanitizes the value sent by user
-         *
-         * @param mixed $value value to sanitize.
-         * @return mixed        sanitized value
-         */
-        public abstract function sanitize($value);
-        /**
-         * Gets description
-         *
-         * @return string description
-         */
-        public function getDescription()
-        {
-        }
-        /**
-         * Gets field value
-         *
-         * @return mixed
-         */
-        public function getValue()
-        {
-        }
-        /**
-         * Sets field value
-         *
-         * @param mixed $value value from DB.
-         * @return void
-         */
-        public function setValue($value)
-        {
-        }
-        /**
-         * Gets field section name
-         *
-         * @return string
-         */
-        public function getSection()
-        {
-        }
-        /**
-         * Sets field section name
-         *
-         * @param string $value assigned value
-         * @return void
-         */
-        public function setSection($value)
-        {
-        }
-        /**
-         * Gets field name
-         *
-         * @return string
-         */
-        public function getName()
-        {
-        }
-        /**
-         * Gets field raw name
-         *
-         * @return string
-         */
-        public function getRawName()
-        {
-        }
-        /**
-         * Gets field label
-         *
-         * @return string
-         */
-        public function getLabel()
-        {
-        }
-        /**
-         * Gets field ID
-         *
-         * @return string
-         */
-        public function getId()
-        {
-        }
-        /**
-         * Checks if field should be resolved with merge tags
-         *
-         * @return bool
-         */
-        public function isResolvable()
-        {
-        }
-        /**
-         * Checks if field is disabled
-         *
-         * @return bool
-         */
-        public function isDisabled()
-        {
-        }
-        /**
-         * Returns the disable HTML tag if field is disabled
-         *
-         * @return string
-         */
-        public function maybeDisable()
-        {
-        }
-        /**
-         * Returns the additional field's css classes
-         *
-         * @return string
-         */
-        public function cssClass()
-        {
-        }
-        /**
-         * Returns rest API error message
-         *
-         * @return string
-         * @since 7.1.0
-         */
-        public function restApiError()
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Taggable interface
-     */
-    interface Taggable extends \BracketSpace\Notification\Interfaces\Nameable
-    {
-        /**
-         * Resolves the merge tag value
-         *
-         * @return mixed
-         */
-        public function resolve();
-        /**
-         * Gets merge tag resolved value
-         *
-         * @return mixed
-         */
-        public function getValue();
-        /**
-         * Cleans merge tag value
-         *
-         * @return void
-         */
-        public function cleanValue();
-        /**
-         * Checks if merge tag is already resolved
-         *
-         * @return bool
-         */
-        public function isResolved();
-        /**
-         * Gets value type
-         *
-         * @return string
-         */
-        public function getValueType();
-        /**
-         * Sets trigger object
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @return $this|void
-         */
-        public function setTrigger(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
-        /**
-         * Gets group
-         *
-         * @return string|null Group name
-         */
-        public function getGroup();
-        /**
-         * Sets group
-         *
-         * @param string $group Group name.
-         * @return $this
-         */
-        public function setGroup(string $group);
-    }
-}
-namespace BracketSpace\Notification\Traits {
-    /**
-     * HasDescription trait
-     */
-    trait HasDescription
-    {
-        /**
-         * Human readable, translated description
-         *
-         * @var string
-         */
-        protected $description;
-        /**
-         * Gets description
-         *
-         * @return string|null Description
-         */
-        public function getDescription()
-        {
-        }
-        /**
-         * Sets description
-         *
-         * @param string $description Description.
-         * @return $this
-         */
-        public function setDescription(string $description)
-        {
-        }
-    }
-    /**
-     * HasGroup trait
-     */
-    trait HasGroup
-    {
-        /**
-         * Human readable, translated group name
-         *
-         * @var string
-         */
-        protected $group;
-        /**
-         * Gets group
-         *
-         * @return string|null Group name
-         */
-        public function getGroup()
-        {
-        }
-        /**
-         * Sets group
-         *
-         * @param string $group Group name.
-         * @return $this
-         */
-        public function setGroup(string $group)
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * MergeTag abstract class
-     */
-    abstract class MergeTag implements \BracketSpace\Notification\Interfaces\Taggable
-    {
-        use \BracketSpace\Notification\Traits\ClassUtils;
-        use \BracketSpace\Notification\Traits\HasDescription;
-        use \BracketSpace\Notification\Traits\HasGroup;
-        use \BracketSpace\Notification\Traits\HasName;
-        use \BracketSpace\Notification\Traits\HasSlug;
-        /**
-         * MergeTag resolved value
-         *
-         * @var mixed
-         */
-        protected $value;
-        /**
-         * MergeTag value type
-         *
-         * @var string
-         */
-        protected $valueType;
-        /**
-         * Function which resolve the merge tag value
-         *
-         * @var callable
-         */
-        protected $resolver;
-        /**
-         * Resolving status
-         *
-         * @var bool
-         */
-        protected $resolved = false;
-        /**
-         * Trigger object, the Merge tag is assigned to
-         *
-         * @var \BracketSpace\Notification\Interfaces\Triggerable
-         */
-        protected $trigger;
-        /**
-         * If description is an example
-         *
-         * @var bool
-         */
-        protected $descriptionExample = false;
-        /**
-         * If merge tag is hidden
-         *
-         * @var bool
-         */
-        protected $hidden = false;
-        /**
-         * Merge tag constructor
-         *
-         * @param array<mixed> $params merge tag configuration params.
-         * @since 7.0.0 The resolver closure context is static.
-         * @since 5.0.0
-         */
-        public function __construct($params = [])
-        {
-        }
-        /**
-         * Checks if the value is the correct type
-         *
-         * @param mixed $value tag value.
-         * @return bool
-         */
-        public abstract function validate($value);
-        /**
-         * Sanitizes the merge tag value
-         *
-         * @param mixed $value tag value.
-         * @return mixed        sanitized value
-         */
-        public abstract function sanitize($value);
-        /**
-         * Resolves the merge tag value
-         * It also check if the value is correct type
-         * and sanitizes it
-         *
-         * @return mixed the resolved value
-         */
-        public function resolve()
-        {
-        }
-        /**
-         * Checks if merge tag is already resolved
-         *
-         * @return bool
-         */
-        public function isResolved()
-        {
-        }
-        /**
-         * Checks if description is an example
-         * If yes, there will be displayed additional label and type
-         *
-         * @return bool
-         */
-        public function isDescriptionExample()
-        {
-        }
-        /**
-         * Gets merge tag resolved value
-         *
-         * @return mixed
-         */
-        public function getValue()
-        {
-        }
-        /**
-         * Sets trigger object
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @since 5.0.0
-         * @return void
-         */
-        public function setTrigger(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
-        {
-        }
-        /**
-         * Sets resolver function
-         *
-         * @param mixed $resolver Resolver, can be either a closure or array or string.
-         * @since 5.2.2
-         * @return void
-         */
-        public function setResolver($resolver)
-        {
-        }
-        /**
-         * Sets resolver function
-         *
-         * @param string $triggerPropertyName merge tag trigger property name.
-         *
-         * @return void
-         * @since 8.0.12
-         *
-         */
-        public function setTriggerProp(string $triggerPropertyName)
-        {
-        }
-        /**
-         * Get trigger property
-         *
-         * @return string
-         * @since 8.0.12
-         *
-         */
-        public function getTriggerProp() : string
-        {
-        }
-        /**
-         * Gets trigger object
-         *
-         * @return \BracketSpace\Notification\Interfaces\Triggerable|null
-         * @since 5.0.0
-         */
-        public function getTrigger()
-        {
-        }
-        /**
-         * Gets value type
-         *
-         * @return string
-         * @since 5.0.0
-         */
-        public function getValueType()
-        {
-        }
-        /**
-         * Checks if merge tag is hidden
-         *
-         * @return bool
-         * @since 5.1.3
-         */
-        public function isHidden()
-        {
-        }
-        /**
-         * Cleans the value
-         *
-         * @return void
-         * @since  5.2.2
-         */
-        public function cleanValue()
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Receivable interface
-     */
-    interface Receivable extends \BracketSpace\Notification\Interfaces\Nameable
-    {
-        /**
-         * Parses saved value something understood by notification
-         * Must be defined in the child class
-         *
-         * @param string $value raw value saved by the user.
-         * @return array<mixed>         array of resolved values
-         */
-        public function parseValue($value = '');
-        /**
-         * Returns input object
-         * Must be defined in the child class
-         *
-         * @return object
-         */
-        public function input();
-        /**
-         * Gets default value
-         *
-         * @return string
-         */
-        public function getDefaultValue();
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * Recipient abstract class
-     */
-    abstract class Recipient implements \BracketSpace\Notification\Interfaces\Receivable
-    {
-        use \BracketSpace\Notification\Traits\ClassUtils;
-        use \BracketSpace\Notification\Traits\HasName;
-        use \BracketSpace\Notification\Traits\HasSlug;
-        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
-        /**
-         * Recipient input default value
-         *
-         * @var string
-         */
-        protected $defaultValue;
-        /**
-         * Recipient constructor
-         *
-         * @param array<mixed> $params recipient configuration params.
-         * @since 5.0.0
-         */
-        public function __construct($params = [])
-        {
-        }
-        /**
-         * Parses saved value something understood by the Carrier
-         *
-         * @param string $value raw value saved by the user.
-         * @return array<mixed> array of resolved values
-         */
-        public function parseValue($value = '')
-        {
-        }
-        /**
-         * Returns input object
-         *
-         * @return \BracketSpace\Notification\Interfaces\Fillable
-         */
-        public abstract function input();
-        /**
-         * Gets default value
-         *
-         * @return string
-         */
-        public function getDefaultValue()
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Resolvable interface
-     */
-    interface Resolvable
-    {
-        /**
-         * Gets slug
-         *
-         * @return string Slug
-         */
-        public function getSlug();
-        /**
-         * Gets merge tag pattern
-         *
-         * @return string Pattern
-         */
-        public function getPattern();
-        /**
-         * Gets resolver priority
-         *
-         * @return int Priority
-         */
-        public function getPriority();
-        /**
-         * Resolves single matched merge tag
-         *
-         * @param array<mixed> $match Match array.
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @return string              Resolved value
-         */
-        public function resolveMergeTag($match, \BracketSpace\Notification\Interfaces\Triggerable $trigger);
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * Resolver class
-     */
-    abstract class Resolver implements \BracketSpace\Notification\Interfaces\Resolvable
-    {
-        /**
-         * Resolver priority
-         * Higher number means later execution
-         */
-        const PRIORITY = 100;
-        /**
-         * Resolver pattern
-         */
-        const PATTERN = '';
-        /**
-         * Gets resolver slug
-         * Note: it's automatically generated from the class name.
-         *
-         * @return string
-         * @since  6.0.0
-         */
-        public function getSlug()
-        {
-        }
-        /**
-         * Gets merge tag pattern
-         *
-         * @return string
-         * @since  6.0.0
-         */
-        public function getPattern()
-        {
-        }
-        /**
-         * Gets resolver priority
-         *
-         * @return int
-         * @since  6.0.0
-         */
-        public function getPriority()
-        {
-        }
-        /**
-         * {@inheritdoc}
-         *
-         * @param array<mixed> $match Match array.
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
-         * @returns string
-         */
-        public function resolveMergeTag($match, \BracketSpace\Notification\Interfaces\Triggerable $trigger)
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Interfaces {
-    /**
-     * Triggerable interface
-     */
-    interface Triggerable extends \BracketSpace\Notification\Interfaces\Nameable
-    {
-        /**
-         * Sets up the merge tags
-         *
-         * @return void
-         */
-        public function setupMergeTags();
-        /**
-         * Gets Trigger's merge tags
-         *
-         * @param string $type Optional, all|visible|hidden, default: all.
-         * @param bool $grouped Optional, default: false.
-         * @return array<\BracketSpace\Notification\Interfaces\Taggable>
-         */
-        public function getMergeTags($type = 'all', $grouped = false);
-        /**
-         * Clears the merge tags
-         *
-         * @return $this
-         */
-        public function clearMergeTags();
-        /**
-         * Stops the trigger.
-         *
-         * @return void
-         */
-        public function stop();
-        /**
-         * Checks if trigger has been stopped
-         *
-         * @return bool
-         */
-        public function isStopped() : bool;
-        /**
-         * Gets Trigger actions
-         *
-         * @return array<int, array{tag: string, priority: int, accepted_args: int}>
-         * @since 8.0.0
-         */
-        public function getActions() : array;
-        /**
-         * Gets group
-         *
-         * @return string|null
-         */
-        public function getGroup();
-    }
-}
-namespace BracketSpace\Notification\Abstracts {
-    /**
-     * Trigger abstract class
-     */
-    abstract class Trigger implements \BracketSpace\Notification\Interfaces\Triggerable
-    {
-        use \BracketSpace\Notification\Traits\ClassUtils;
-        use \BracketSpace\Notification\Traits\HasDescription;
-        use \BracketSpace\Notification\Traits\HasGroup;
-        use \BracketSpace\Notification\Traits\HasName;
-        use \BracketSpace\Notification\Traits\HasSlug;
-        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
-        /**
-         * Flag indicating that trigger
-         * has been stopped
-         *
-         * @var bool
-         */
-        protected $stopped = false;
-        /**
-         * Bound actions
-         *
-         * @var array<int, array{tag: string, priority: int, accepted_args: int}>
-         */
-        protected $actions = [];
-        /**
-         * Merge tags
-         *
-         * @var array<mixed>
-         */
-        protected $mergeTags = [];
-        /**
-         * Flag indicating that merge tags has been already added.
-         *
-         * @var bool
-         */
-        protected $mergeTagsAdded = false;
-        /**
-         * Trigger constructor
-         *
-         * @param string $slug Slug, optional.
-         * @param string $name Nice name, optional.
-         */
-        public function __construct($slug = null, $name = null)
-        {
-        }
-        /**
-         * Used to register trigger merge tags
-         *
-         * @return void
-         */
-        public function mergeTags()
-        {
-        }
-        /**
-         * Sets up the merge tags
-         *
-         * @return void
-         */
-        public function setupMergeTags()
-        {
-        }
-        /**
-         * Clears the merge tags
-         *
-         * @return $this
-         */
-        public function clearMergeTags()
-        {
-        }
-        /**
-         * Adds an action listener
-         *
-         * @param string $tag action hook.
-         * @param int $priority action priority, default 10.
-         * @param int $acceptedArgs how many args the action accepts, default 1.
-         * @since 6.0.0
-         * @since 6.3.0 Background processing action now accepts one more param for cache.
-         * @since 8.0.0 Only stores the action params in collection.
-         * @return void
-         *
-         */
-        public function addAction($tag, $priority = 10, $acceptedArgs = 1)
-        {
-        }
-        /**
-         * Removes the action from the actions library.
-         *
-         * @param string $tag action hook.
-         * @param int $priority action priority, default 10.
-         * @param mixed $deprecated deprecated.
-         * @return void
-         */
-        public function removeAction($tag, $priority = 10, $deprecated = null)
-        {
-        }
-        /**
-         * Gets Trigger actions
-         *
-         * @return array<int, array{tag: string, priority: int, accepted_args: int}>
-         * @since 8.0.0
-         */
-        public function getActions() : array
-        {
-        }
-        /**
-         * Adds Trigger's Merge Tag
-         *
-         * @param \BracketSpace\Notification\Interfaces\Taggable $mergeTag merge tag object.
-         * @return $this
-         */
-        public function addMergeTag(\BracketSpace\Notification\Interfaces\Taggable $mergeTag)
-        {
-        }
-        /**
-         * Quickly adds new Merge Tag
-         *
-         * @param string $propertyName Trigger property name.
-         * @param string $label Nice, translatable Merge Tag label.
-         * @param string $group Optional, translatable group name.
-         * @since 6.0.0
-         * @return $this
-         *
-         */
-        public function addQuickMergeTag($propertyName, $label, $group = null)
-        {
-        }
-        /**
-         * Removes Trigger's merge tag
-         *
-         * @param string $mergeTagSlug Merge Tag slug.
-         * @return $this
-         */
-        public function removeMergeTag($mergeTagSlug)
-        {
-        }
-        /**
-         * Gets Trigger's merge tags
-         *
-         * @param string $type Optional, all|visible|hidden, default: all.
-         * @param bool $grouped Optional, default: false.
-         * @return array<\BracketSpace\Notification\Interfaces\Taggable>
-         * @since 6.0.0 Added param $grouped which makes the array associative
-         *               with merge tag slugs as keys.
-         */
-        public function getMergeTags($type = 'all', $grouped = false)
-        {
-        }
-        /**
-         * Stops the trigger.
-         *
-         * @return void
-         * @since 6.2.0
-         */
-        public function stop()
-        {
-        }
-        /**
-         * Resumes the trigger.
-         *
-         * @return void
-         * @since 6.2.0
-         */
-        public function resume()
-        {
-        }
-        /**
-         * Checks if trigger has been stopped
-         *
-         * @return bool
-         */
-        public function isStopped() : bool
-        {
-        }
-        /***********************************
-         *        DEPRECATED METHODS
-         ***********************************/
-        /**
-         * All triggers can be considered postponed as of v8.0.0
-         * as they are processed on the `shutdown` hook.
-         *
-         * @param string $tag action hook.
-         * @param int $priority action priority, default 10.
-         * @param int $acceptedArgs how many args the action accepts, default 1.
-         * @return void
-         * @since 6.2.0 Action cannot be postponed if background processing is active.
-         * @since 8.0.0 Deprecated
-         * @since 6.1.0 The postponed action have own method.
-         */
-        public function postponeAction($tag, $priority = 10, $acceptedArgs = 1)
-        {
-        }
-        /**
-         * All triggers can be considered postponed as of v8.0.0
-         * as they are processed on the `shutdown` hook.
-         *
-         * @return bool
-         * @since 8.0.0 Deprecated
-         */
-        public function isPostponed()
-        {
-        }
-        /**
-         * Checks if this trigger has background processing active.
-         *
-         * @return bool
-         * @since 8.0.0 Deprecated
-         * @since 7.2.3
-         */
-        public function hasBackgroundProcessingEnabled()
-        {
-        }
-        /**
-         * Gets action arguments.
-         *
-         * @return array<mixed>
-         * @since 8.0.0 Deprecated
-         * @since 6.2.0
-         */
-        public function getActionArgs()
-        {
-        }
-        /**
-         * Always returns an empty array
-         *
-         * @return array<mixed>
-         * @since 8.0.0 Deprecated
-         * @since  6.3.0
-         */
-        public function getCache()
-        {
-        }
-        /**
-         * Doesn't do anything
-         *
-         * @param array<mixed> $cache Array with cached vars.
-         * @return $this
-         * @since  6.3.0
-         * @since 8.0.0 Deprecated
-         */
-        public function setCache($cache)
-        {
-        }
-        /**
-         * Always returns the $default value
-         *
-         * @param string $key Cache key.
-         * @param mixed $default Default value.
-         * @return mixed
-         * @since  8.0.0 Deprecated
-         * @since  6.3.0
-         */
-        public function cache($key, $default = '')
-        {
-        }
-    }
-}
 namespace BracketSpace\Notification\Admin {
-    /**
-     * CheckRestApi class
-     */
-    class CheckRestApi
-    {
-        /**
-         * Method sends request to API, based on response checks whether REST API works correctly
-         *
-         * @return void
-         * @since 8.0.12
-         * @action admin_notices
-         */
-        public function testRestApi()
-        {
-        }
-    }
     /**
      * Debugging class
      */
@@ -3486,6 +2497,52 @@ namespace BracketSpace\Notification\Cli {
          * @return void
          */
         public function __invoke($args)
+        {
+        }
+    }
+}
+namespace BracketSpace\Notification\Compat {
+    /**
+     * RestApi compat class
+     */
+    class RestApiCompat
+    {
+        /**
+         * Method sends request to API, based on response checks whether REST API works correctly
+         *
+         * @action admin_notices
+         *
+         * @return void
+         * @since 8.0.12
+         */
+        public function testRestApi()
+        {
+        }
+    }
+    /**
+     * WebhookCompat class
+     *
+     * @since [Next]
+     */
+    class WebhookCompat
+    {
+        /**
+         * Checks wether webhook carriers are in th database
+         *
+         * @return bool
+         */
+        public static function hasDeprecatedWebhookCarriers() : bool
+        {
+        }
+        /**
+         * Displays a notice message when someone is
+         * using the deprecated webhooks.
+         *
+         * @action admin_notices
+         *
+         * @return void
+         */
+        public function displayNotice()
         {
         }
     }
@@ -5420,10 +4477,257 @@ namespace BracketSpace\Notification\Interfaces {
         public function to(\BracketSpace\Notification\Core\Notification $notification, array $config = []);
     }
     /**
+     * Fillable interface
+     */
+    interface Fillable
+    {
+        /**
+         * Gets field value
+         *
+         * @return mixed
+         */
+        public function getValue();
+        /**
+         * Sets field value
+         *
+         * @param mixed $value value from DB.
+         * @return void
+         */
+        public function setValue($value);
+        /**
+         * Gets field section name
+         *
+         * @return string
+         */
+        public function getSection();
+        /**
+         * Sets field section name
+         *
+         * @param string $value assigned value
+         * @return void
+         */
+        public function setSection($value);
+        /**
+         * Gets field name
+         *
+         * @return string
+         */
+        public function getName();
+        /**
+         * Gets raw field name
+         *
+         * @return string
+         */
+        public function getRawName();
+        /**
+         * Gets field label
+         *
+         * @return string
+         */
+        public function getLabel();
+        /**
+         * Gets field ID
+         *
+         * @return string
+         */
+        public function getId();
+        /**
+         * Gets field description
+         *
+         * @return string
+         */
+        public function getDescription();
+        /**
+         * Returns the additional field's css classes
+         *
+         * @return string
+         */
+        public function cssClass();
+        /**
+         * Checks if field should be resolved with merge tags
+         *
+         * @return bool
+         */
+        public function isResolvable();
+        /**
+         * Sanitizes the value sent by user
+         *
+         * @param mixed $value value to sanitize.
+         * @return mixed        sanitized value
+         */
+        public function sanitize($value);
+    }
+    /**
+     * Receivable interface
+     */
+    interface Receivable extends \BracketSpace\Notification\Interfaces\Nameable
+    {
+        /**
+         * Parses saved value something understood by notification
+         * Must be defined in the child class
+         *
+         * @param string $value raw value saved by the user.
+         * @return array<mixed>         array of resolved values
+         */
+        public function parseValue($value = '');
+        /**
+         * Returns input object
+         * Must be defined in the child class
+         *
+         * @return object
+         */
+        public function input();
+        /**
+         * Gets default value
+         *
+         * @return string
+         */
+        public function getDefaultValue();
+    }
+    /**
+     * Resolvable interface
+     */
+    interface Resolvable
+    {
+        /**
+         * Gets slug
+         *
+         * @return string Slug
+         */
+        public function getSlug();
+        /**
+         * Gets merge tag pattern
+         *
+         * @return string Pattern
+         */
+        public function getPattern();
+        /**
+         * Gets resolver priority
+         *
+         * @return int Priority
+         */
+        public function getPriority();
+        /**
+         * Resolves single matched merge tag
+         *
+         * @param array<mixed> $match Match array.
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @return string              Resolved value
+         */
+        public function resolveMergeTag($match, \BracketSpace\Notification\Interfaces\Triggerable $trigger);
+    }
+    /**
      * Storable interface
      */
     interface Storable
     {
+    }
+    /**
+     * Taggable interface
+     */
+    interface Taggable extends \BracketSpace\Notification\Interfaces\Nameable
+    {
+        /**
+         * Resolves the merge tag value
+         *
+         * @return mixed
+         */
+        public function resolve();
+        /**
+         * Gets merge tag resolved value
+         *
+         * @return mixed
+         */
+        public function getValue();
+        /**
+         * Cleans merge tag value
+         *
+         * @return void
+         */
+        public function cleanValue();
+        /**
+         * Checks if merge tag is already resolved
+         *
+         * @return bool
+         */
+        public function isResolved();
+        /**
+         * Gets value type
+         *
+         * @return string
+         */
+        public function getValueType();
+        /**
+         * Sets trigger object
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @return $this|void
+         */
+        public function setTrigger(\BracketSpace\Notification\Interfaces\Triggerable $trigger);
+        /**
+         * Gets group
+         *
+         * @return string|null Group name
+         */
+        public function getGroup();
+        /**
+         * Sets group
+         *
+         * @param string $group Group name.
+         * @return $this
+         */
+        public function setGroup(string $group);
+    }
+    /**
+     * Triggerable interface
+     */
+    interface Triggerable extends \BracketSpace\Notification\Interfaces\Nameable
+    {
+        /**
+         * Sets up the merge tags
+         *
+         * @return void
+         */
+        public function setupMergeTags();
+        /**
+         * Gets Trigger's merge tags
+         *
+         * @param string $type Optional, all|visible|hidden, default: all.
+         * @param bool $grouped Optional, default: false.
+         * @return array<\BracketSpace\Notification\Interfaces\Taggable>
+         */
+        public function getMergeTags($type = 'all', $grouped = false);
+        /**
+         * Clears the merge tags
+         *
+         * @return $this
+         */
+        public function clearMergeTags();
+        /**
+         * Stops the trigger.
+         *
+         * @return void
+         */
+        public function stop();
+        /**
+         * Checks if trigger has been stopped
+         *
+         * @return bool
+         */
+        public function isStopped() : bool;
+        /**
+         * Gets Trigger actions
+         *
+         * @return array<int, array{tag: string, priority: int, accepted_args: int}>
+         * @since 8.0.0
+         */
+        public function getActions() : array;
+        /**
+         * Gets group
+         *
+         * @return string|null
+         */
+        public function getGroup();
     }
 }
 namespace BracketSpace\Notification {
@@ -5521,7 +4825,7 @@ namespace BracketSpace\Notification\Repository\Carrier {
     /**
      * Email Carrier
      */
-    class Email extends \BracketSpace\Notification\Abstracts\Carrier
+    class Email extends \BracketSpace\Notification\Repository\Carrier\BaseCarrier
     {
         /**
          * Carrier icon
@@ -5584,113 +4888,6 @@ namespace BracketSpace\Notification\Repository\Carrier {
          * @return string
          */
         protected function getFromHeaderSetting()
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Traits {
-    /**
-     * Webhook trait
-     */
-    trait Webhook
-    {
-        /**
-         * Carrier constructor
-         *
-         * @param string $name Webhook nice name.
-         * @return void
-         * @since  7.0.0
-         */
-        public function __construct($name)
-        {
-        }
-        /**
-         * Makes http request
-         *
-         * @param string $url URL to call.
-         * @param array<mixed> $args Arguments. Default: empty.
-         * @param array<mixed> $headers Headers. Default: empty.
-         * @param string $method HTTP request method.
-         * @return void
-         * @since  7.0.0
-         */
-        public function httpRequest($url, $args = [], $headers = [], $method = 'GET')
-        {
-        }
-        /**
-         * Parses args to be understand by the wp_remote_* functions
-         *
-         * @param array<mixed> $args Args from saved fields.
-         * @return array<mixed>       Parsed args as key => value array
-         * @since  7.0.0
-         */
-        private function parseArgs($args)
-        {
-        }
-    }
-}
-namespace BracketSpace\Notification\Repository\Carrier {
-    /**
-     * Webhook Carrier
-     */
-    class Webhook extends \BracketSpace\Notification\Abstracts\Carrier
-    {
-        use \BracketSpace\Notification\Traits\Webhook;
-        /**
-         * Carrier icon
-         *
-         * @var string SVG
-         */
-        //phpcs:ignore Generic.Files.LineLength.TooLong
-        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.07 372.81"><path d="M100.7,239.8q23.25-38,46.9-76.5c-22.1-21.5-32.4-47.5-30.2-78,1.7-23.7,11.5-44,28.9-60.5C180-7,232.8-8.4,269,21.6c36.6,30.3,44.7,82.2,22.8,119.7-8.2-4.8-16.5-9.5-25.1-14.5,9.5-20.3,9.7-40.5-.5-60.5a63.54,63.54,0,0,0-34.4-31.1c-29.3-11.5-61.2.6-76.3,28.3-14.3,26.3-9.1,72,32.8,91.6-20.8,33.9-41.7,67.7-62.4,101.5,11.5,20,6.8,40.2-7.7,52.3-13,10.9-31.3,11.7-45.6,2.2A39.54,39.54,0,0,1,56.4,267C61.9,248.4,75.3,240.1,100.7,239.8Z" transform="translate(0.01 0.01)"/><path d="M90.9,184.8v28.9c-20.6,2.5-37.2,12.1-48.8,29.8-9,13.7-12.2,28.7-10.3,44.9a60.28,60.28,0,0,0,58.7,53.2c20.7.4,38-7.7,51.4-23.5s16.9-34.3,14.5-55.1H270.5c12.4-21.6,34-26.5,50.4-19.7a38.83,38.83,0,0,1,23.5,40.6c-2,16.7-15.6,31.2-32,33.9-18.9,3.2-34.1-5.5-43.3-24.9H186.4c-8.7,57.3-66.3,90.4-117.3,76.9-45.9-12.1-75.6-58-67.9-104.6C9.9,212.7,54.1,185,90.9,184.8Z" transform="translate(0.01 0.01)"/><path d="M212.7,132.1c-23.6-1.7-38-12.7-41.7-31.3a38.1,38.1,0,0,1,19.9-41.5A39.61,39.61,0,0,1,238,67.2c13.4,14.1,14,30.1,1.5,51.5q19.2,35.4,38.5,71.2c29.3-8.3,56.9-5.2,82.3,11.6,20,13.2,33.2,31.7,39,55a92.71,92.71,0,0,1-60.1,110c-47,16.2-94-6.4-113-40.9,8.2-4.8,16.5-9.6,24.7-14.3,25.6,36.5,69.8,35.9,94.6,17.6,25.2-18.6,33.1-52.5,17.8-79.5-9.8-17.2-24.7-27.7-44.1-31.8s-37,1.2-53.6,12.2C247.8,196.9,230.2,164.5,212.7,132.1Z" transform="translate(0.01 0.01)"/></svg>';
-        /**
-         * Used to register Carrier form fields
-         * Uses $this->addFormField();
-         *
-         * @return void
-         */
-        public function formFields()
-        {
-        }
-        /**
-         * Sends the notification
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
-         * @return void
-         */
-        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
-        {
-        }
-    }
-    /**
-     * Webhook Carrier
-     */
-    class WebhookJson extends \BracketSpace\Notification\Abstracts\Carrier
-    {
-        use \BracketSpace\Notification\Traits\Webhook;
-        /**
-         * Carrier icon
-         *
-         * @var string SVG
-         */
-        //phpcs:ignore Generic.Files.LineLength.TooLong
-        public $icon = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.07 372.81"><path d="M100.7,239.8q23.25-38,46.9-76.5c-22.1-21.5-32.4-47.5-30.2-78,1.7-23.7,11.5-44,28.9-60.5C180-7,232.8-8.4,269,21.6c36.6,30.3,44.7,82.2,22.8,119.7-8.2-4.8-16.5-9.5-25.1-14.5,9.5-20.3,9.7-40.5-.5-60.5a63.54,63.54,0,0,0-34.4-31.1c-29.3-11.5-61.2.6-76.3,28.3-14.3,26.3-9.1,72,32.8,91.6-20.8,33.9-41.7,67.7-62.4,101.5,11.5,20,6.8,40.2-7.7,52.3-13,10.9-31.3,11.7-45.6,2.2A39.54,39.54,0,0,1,56.4,267C61.9,248.4,75.3,240.1,100.7,239.8Z" transform="translate(0.01 0.01)"/><path d="M90.9,184.8v28.9c-20.6,2.5-37.2,12.1-48.8,29.8-9,13.7-12.2,28.7-10.3,44.9a60.28,60.28,0,0,0,58.7,53.2c20.7.4,38-7.7,51.4-23.5s16.9-34.3,14.5-55.1H270.5c12.4-21.6,34-26.5,50.4-19.7a38.83,38.83,0,0,1,23.5,40.6c-2,16.7-15.6,31.2-32,33.9-18.9,3.2-34.1-5.5-43.3-24.9H186.4c-8.7,57.3-66.3,90.4-117.3,76.9-45.9-12.1-75.6-58-67.9-104.6C9.9,212.7,54.1,185,90.9,184.8Z" transform="translate(0.01 0.01)"/><path d="M212.7,132.1c-23.6-1.7-38-12.7-41.7-31.3a38.1,38.1,0,0,1,19.9-41.5A39.61,39.61,0,0,1,238,67.2c13.4,14.1,14,30.1,1.5,51.5q19.2,35.4,38.5,71.2c29.3-8.3,56.9-5.2,82.3,11.6,20,13.2,33.2,31.7,39,55a92.71,92.71,0,0,1-60.1,110c-47,16.2-94-6.4-113-40.9,8.2-4.8,16.5-9.6,24.7-14.3,25.6,36.5,69.8,35.9,94.6,17.6,25.2-18.6,33.1-52.5,17.8-79.5-9.8-17.2-24.7-27.7-44.1-31.8s-37,1.2-53.6,12.2C247.8,196.9,230.2,164.5,212.7,132.1Z" transform="translate(0.01 0.01)"/></svg>';
-        /**
-         * Used to register Carrier form fields
-         * Uses $this->addFormField();
-         *
-         * @return void
-         */
-        public function formFields()
-        {
-        }
-        /**
-         * Sends the notification
-         *
-         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger trigger object.
-         * @return void
-         */
-        public function send(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
         {
         }
     }
@@ -5793,9 +4990,232 @@ namespace BracketSpace\Notification\Repository {
 }
 namespace BracketSpace\Notification\Repository\Field {
     /**
+     * Field abstract class
+     */
+    abstract class BaseField implements \BracketSpace\Notification\Interfaces\Fillable
+    {
+        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
+        /**
+         * Field unique ID
+         *
+         * @var string
+         */
+        public $id;
+        /**
+         * Field value
+         *
+         * @var mixed
+         */
+        public $value;
+        /**
+         * Field label
+         *
+         * @var mixed
+         */
+        protected $label;
+        /**
+         * Field name
+         *
+         * @var mixed
+         */
+        protected $name;
+        /**
+         * Short description
+         * Limited HTML support
+         *
+         * @var string
+         */
+        protected $description = '';
+        /**
+         * If field is resolvable with merge tags
+         * Default: true
+         *
+         * @var bool
+         */
+        protected $resolvable = true;
+        /**
+         * Field section name
+         *
+         * @var string
+         */
+        protected $section = '';
+        /**
+         * If field is disabled
+         *
+         * @var bool
+         */
+        public $disabled = false;
+        /**
+         * Additional css classes for field
+         *
+         * @var string
+         */
+        public $cssClass = 'widefat notification-field ';
+        // space here on purpose.
+        /**
+         * If field can be used multiple times in Section Repeater row
+         *
+         * @var bool
+         */
+        public $multipleSection = false;
+        /**
+         * Field type used in HTML attribute.
+         *
+         * @var string
+         */
+        public $fieldTypeHtml = '';
+        /**
+         * Field constructor
+         *
+         * @param array<mixed> $params field configuration params.
+         * @since 5.0.0
+         */
+        public function __construct($params = [])
+        {
+        }
+        /**
+         * Returns field data
+         *
+         * @param string $param Field data name.
+         * @return  array
+         * @since 7.0.0
+         */
+        public function __get($param)
+        {
+        }
+        /**
+         * Returns field HTML
+         *
+         * @return string html
+         */
+        public abstract function field();
+        /**
+         * Sanitizes the value sent by user
+         *
+         * @param mixed $value value to sanitize.
+         * @return mixed        sanitized value
+         */
+        public abstract function sanitize($value);
+        /**
+         * Gets description
+         *
+         * @return string description
+         */
+        public function getDescription()
+        {
+        }
+        /**
+         * Gets field value
+         *
+         * @return mixed
+         */
+        public function getValue()
+        {
+        }
+        /**
+         * Sets field value
+         *
+         * @param mixed $value value from DB.
+         * @return void
+         */
+        public function setValue($value)
+        {
+        }
+        /**
+         * Gets field section name
+         *
+         * @return string
+         */
+        public function getSection()
+        {
+        }
+        /**
+         * Sets field section name
+         *
+         * @param string $value assigned value
+         * @return void
+         */
+        public function setSection($value)
+        {
+        }
+        /**
+         * Gets field name
+         *
+         * @return string
+         */
+        public function getName()
+        {
+        }
+        /**
+         * Gets field raw name
+         *
+         * @return string
+         */
+        public function getRawName()
+        {
+        }
+        /**
+         * Gets field label
+         *
+         * @return string
+         */
+        public function getLabel()
+        {
+        }
+        /**
+         * Gets field ID
+         *
+         * @return string
+         */
+        public function getId()
+        {
+        }
+        /**
+         * Checks if field should be resolved with merge tags
+         *
+         * @return bool
+         */
+        public function isResolvable()
+        {
+        }
+        /**
+         * Checks if field is disabled
+         *
+         * @return bool
+         */
+        public function isDisabled()
+        {
+        }
+        /**
+         * Returns the disable HTML tag if field is disabled
+         *
+         * @return string
+         */
+        public function maybeDisable()
+        {
+        }
+        /**
+         * Returns the additional field's css classes
+         *
+         * @return string
+         */
+        public function cssClass()
+        {
+        }
+        /**
+         * Returns rest API error message
+         *
+         * @return string
+         * @since 7.1.0
+         */
+        public function restApiError()
+        {
+        }
+    }
+    /**
      * Checkbox field class
      */
-    class CheckboxField extends \BracketSpace\Notification\Abstracts\Field
+    class CheckboxField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Checkbox label text
@@ -5834,7 +5254,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Editor field class
      */
-    class CodeEditorField extends \BracketSpace\Notification\Abstracts\Field
+    class CodeEditorField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Editor settings
@@ -5873,7 +5293,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Color Picker field class
      */
-    class ColorPickerField extends \BracketSpace\Notification\Abstracts\Field
+    class ColorPickerField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Returns field HTML
@@ -5896,7 +5316,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Editor field class
      */
-    class EditorField extends \BracketSpace\Notification\Abstracts\Field
+    class EditorField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Editor settings
@@ -5935,7 +5355,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Image field class
      */
-    class ImageField extends \BracketSpace\Notification\Abstracts\Field
+    class ImageField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Returns field HTML
@@ -5958,7 +5378,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Input field class
      */
-    class InputField extends \BracketSpace\Notification\Abstracts\Field
+    class InputField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Field type
@@ -6017,7 +5437,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Input field class
      */
-    class MessageField extends \BracketSpace\Notification\Abstracts\Field
+    class MessageField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Message
@@ -6065,7 +5485,7 @@ namespace BracketSpace\Notification\Repository\Field {
          * Sanitizes the value sent by user
          *
          * @param mixed $value value to sanitize.
-         * @return mixed        sanitized value
+         * @return null
          */
         public function sanitize($value)
         {
@@ -6074,7 +5494,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Nonce field class
      */
-    class NonceField extends \BracketSpace\Notification\Abstracts\Field
+    class NonceField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Nonce key
@@ -6112,7 +5532,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Repeater field class
      */
-    class RepeaterField extends \BracketSpace\Notification\Abstracts\Field
+    class RepeaterField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Current repeater row
@@ -6246,7 +5666,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Repeater field class
      */
-    class SectionRepeater extends \BracketSpace\Notification\Abstracts\Field
+    class SectionRepeater extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Current repeater row
@@ -6385,7 +5805,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Select field class
      */
-    class SelectField extends \BracketSpace\Notification\Abstracts\Field
+    class SelectField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Field options
@@ -6431,7 +5851,7 @@ namespace BracketSpace\Notification\Repository\Field {
     /**
      * Textarea field class
      */
-    class TextareaField extends \BracketSpace\Notification\Abstracts\Field
+    class TextareaField extends \BracketSpace\Notification\Repository\Field\BaseField
     {
         /**
          * Field placeholder
@@ -6493,11 +5913,261 @@ namespace BracketSpace\Notification\Repository {
         }
     }
 }
+namespace BracketSpace\Notification\Traits {
+    /**
+     * HasDescription trait
+     */
+    trait HasDescription
+    {
+        /**
+         * Human readable, translated description
+         *
+         * @var string
+         */
+        protected $description;
+        /**
+         * Gets description
+         *
+         * @return string|null Description
+         */
+        public function getDescription()
+        {
+        }
+        /**
+         * Sets description
+         *
+         * @param string $description Description.
+         * @return $this
+         */
+        public function setDescription(string $description)
+        {
+        }
+    }
+    /**
+     * HasGroup trait
+     */
+    trait HasGroup
+    {
+        /**
+         * Human readable, translated group name
+         *
+         * @var string
+         */
+        protected $group;
+        /**
+         * Gets group
+         *
+         * @return string|null Group name
+         */
+        public function getGroup()
+        {
+        }
+        /**
+         * Sets group
+         *
+         * @param string $group Group name.
+         * @return $this
+         */
+        public function setGroup(string $group)
+        {
+        }
+    }
+}
 namespace BracketSpace\Notification\Repository\MergeTag {
+    /**
+     * MergeTag abstract class
+     */
+    abstract class BaseMergeTag implements \BracketSpace\Notification\Interfaces\Taggable
+    {
+        use \BracketSpace\Notification\Traits\ClassUtils;
+        use \BracketSpace\Notification\Traits\HasDescription;
+        use \BracketSpace\Notification\Traits\HasGroup;
+        use \BracketSpace\Notification\Traits\HasName;
+        use \BracketSpace\Notification\Traits\HasSlug;
+        /**
+         * MergeTag resolved value
+         *
+         * @var mixed
+         */
+        protected $value;
+        /**
+         * MergeTag value type
+         *
+         * @var string
+         */
+        protected $valueType;
+        /**
+         * Function which resolve the merge tag value
+         *
+         * @var callable
+         */
+        protected $resolver;
+        /**
+         * Resolving status
+         *
+         * @var bool
+         */
+        protected $resolved = false;
+        /**
+         * Trigger object, the Merge tag is assigned to
+         *
+         * @var \BracketSpace\Notification\Interfaces\Triggerable
+         */
+        protected $trigger;
+        /**
+         * If description is an example
+         *
+         * @var bool
+         */
+        protected $descriptionExample = false;
+        /**
+         * If merge tag is hidden
+         *
+         * @var bool
+         */
+        protected $hidden = false;
+        /**
+         * Merge tag constructor
+         *
+         * @param array<mixed> $params merge tag configuration params.
+         * @since 7.0.0 The resolver closure context is static.
+         * @since 5.0.0
+         */
+        public function __construct($params = [])
+        {
+        }
+        /**
+         * Checks if the value is the correct type
+         *
+         * @param mixed $value tag value.
+         * @return bool
+         */
+        public abstract function validate($value);
+        /**
+         * Sanitizes the merge tag value
+         *
+         * @param mixed $value tag value.
+         * @return mixed        sanitized value
+         */
+        public abstract function sanitize($value);
+        /**
+         * Resolves the merge tag value
+         * It also check if the value is correct type
+         * and sanitizes it
+         *
+         * @return mixed the resolved value
+         */
+        public function resolve()
+        {
+        }
+        /**
+         * Checks if merge tag is already resolved
+         *
+         * @return bool
+         */
+        public function isResolved()
+        {
+        }
+        /**
+         * Checks if description is an example
+         * If yes, there will be displayed additional label and type
+         *
+         * @return bool
+         */
+        public function isDescriptionExample()
+        {
+        }
+        /**
+         * Gets merge tag resolved value
+         *
+         * @return mixed
+         */
+        public function getValue()
+        {
+        }
+        /**
+         * Sets trigger object
+         *
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @since 5.0.0
+         * @return void
+         */
+        public function setTrigger(\BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+        /**
+         * Sets resolver function
+         *
+         * @param mixed $resolver Resolver, can be either a closure or array or string.
+         * @since 5.2.2
+         * @return void
+         */
+        public function setResolver($resolver)
+        {
+        }
+        /**
+         * Sets resolver function
+         *
+         * @param string $triggerPropertyName merge tag trigger property name.
+         *
+         * @return void
+         * @since 8.0.12
+         *
+         */
+        public function setTriggerProp(string $triggerPropertyName)
+        {
+        }
+        /**
+         * Get trigger property
+         *
+         * @return string
+         * @since 8.0.12
+         *
+         */
+        public function getTriggerProp() : string
+        {
+        }
+        /**
+         * Gets trigger object
+         *
+         * @return \BracketSpace\Notification\Interfaces\Triggerable|null
+         * @since 5.0.0
+         */
+        public function getTrigger()
+        {
+        }
+        /**
+         * Gets value type
+         *
+         * @return string
+         * @since 5.0.0
+         */
+        public function getValueType()
+        {
+        }
+        /**
+         * Checks if merge tag is hidden
+         *
+         * @return bool
+         * @since 5.1.3
+         */
+        public function isHidden()
+        {
+        }
+        /**
+         * Cleans the value
+         *
+         * @return void
+         * @since  5.2.2
+         */
+        public function cleanValue()
+        {
+        }
+    }
     /**
      * Boolean merge tag class
      */
-    class BooleanTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class BooleanTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -6527,7 +6197,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * URL merge tag class
      */
-    class UrlTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class UrlTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -6645,7 +6315,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * IP merge tag class
      */
-    class IPTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class IPTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -6721,7 +6391,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * String merge tag class
      */
-    class StringTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class StringTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -6797,7 +6467,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * HTML merge tag class
      */
-    class HtmlTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class HtmlTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -6852,7 +6522,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * Integer merge tag class
      */
-    class IntegerTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class IntegerTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -7026,7 +6696,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * Email merge tag class
      */
-    class EmailTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class EmailTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -7056,7 +6726,7 @@ namespace BracketSpace\Notification\Repository\MergeTag {
     /**
      * Float merge tag class
      */
-    class FloatTag extends \BracketSpace\Notification\Abstracts\MergeTag
+    class FloatTag extends \BracketSpace\Notification\Repository\MergeTag\BaseMergeTag
     {
         /**
          * MergeTag value type
@@ -7691,9 +7361,57 @@ namespace BracketSpace\Notification\Repository\MergeTag\User {
 }
 namespace BracketSpace\Notification\Repository\Recipient {
     /**
+     * Recipient abstract class
+     */
+    abstract class BaseRecipient implements \BracketSpace\Notification\Interfaces\Receivable
+    {
+        use \BracketSpace\Notification\Traits\ClassUtils;
+        use \BracketSpace\Notification\Traits\HasName;
+        use \BracketSpace\Notification\Traits\HasSlug;
+        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
+        /**
+         * Recipient input default value
+         *
+         * @var string
+         */
+        protected $defaultValue;
+        /**
+         * Recipient constructor
+         *
+         * @param array<mixed> $params recipient configuration params.
+         * @since 5.0.0
+         */
+        public function __construct($params = [])
+        {
+        }
+        /**
+         * Parses saved value something understood by the Carrier
+         *
+         * @param string $value raw value saved by the user.
+         * @return array<mixed> array of resolved values
+         */
+        public function parseValue($value = '')
+        {
+        }
+        /**
+         * Returns input object
+         *
+         * @return \BracketSpace\Notification\Interfaces\Fillable
+         */
+        public abstract function input();
+        /**
+         * Gets default value
+         *
+         * @return string
+         */
+        public function getDefaultValue()
+        {
+        }
+    }
+    /**
      * Administrator recipient
      */
-    class Administrator extends \BracketSpace\Notification\Abstracts\Recipient
+    class Administrator extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7724,7 +7442,7 @@ namespace BracketSpace\Notification\Repository\Recipient {
     /**
      * Email recipient
      */
-    class Email extends \BracketSpace\Notification\Abstracts\Recipient
+    class Email extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7755,7 +7473,7 @@ namespace BracketSpace\Notification\Repository\Recipient {
     /**
      * Role recipient
      */
-    class Role extends \BracketSpace\Notification\Abstracts\Recipient
+    class Role extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7786,7 +7504,7 @@ namespace BracketSpace\Notification\Repository\Recipient {
     /**
      * User recipient
      */
-    class User extends \BracketSpace\Notification\Abstracts\Recipient
+    class User extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7817,7 +7535,7 @@ namespace BracketSpace\Notification\Repository\Recipient {
     /**
      * User ID recipient
      */
-    class UserID extends \BracketSpace\Notification\Abstracts\Recipient
+    class UserID extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7848,7 +7566,7 @@ namespace BracketSpace\Notification\Repository\Recipient {
     /**
      * Webhook recipient
      */
-    class Webhook extends \BracketSpace\Notification\Abstracts\Recipient
+    class Webhook extends \BracketSpace\Notification\Repository\Recipient\BaseRecipient
     {
         /**
          * Recipient constructor
@@ -7901,9 +7619,62 @@ namespace BracketSpace\Notification\Repository {
 }
 namespace BracketSpace\Notification\Repository\Resolver {
     /**
+     * Resolver class
+     */
+    abstract class BaseResolver implements \BracketSpace\Notification\Interfaces\Resolvable
+    {
+        /**
+         * Resolver priority
+         * Higher number means later execution
+         */
+        const PRIORITY = 100;
+        /**
+         * Resolver pattern
+         */
+        const PATTERN = '';
+        /**
+         * Gets resolver slug
+         * Note: it's automatically generated from the class name.
+         *
+         * @return string
+         * @since  6.0.0
+         */
+        public function getSlug()
+        {
+        }
+        /**
+         * Gets merge tag pattern
+         *
+         * @return string
+         * @since  6.0.0
+         */
+        public function getPattern()
+        {
+        }
+        /**
+         * Gets resolver priority
+         *
+         * @return int
+         * @since  6.0.0
+         */
+        public function getPriority()
+        {
+        }
+        /**
+         * {@inheritdoc}
+         *
+         * @param array<mixed> $match Match array.
+         * @param \BracketSpace\Notification\Interfaces\Triggerable $trigger Trigger object.
+         * @returns string
+         */
+        public function resolveMergeTag($match, \BracketSpace\Notification\Interfaces\Triggerable $trigger)
+        {
+        }
+    }
+    /**
      * Basic resolver
      */
-    class Basic extends \BracketSpace\Notification\Abstracts\Resolver
+    class Basic extends \BracketSpace\Notification\Repository\Resolver\BaseResolver
     {
         /**
          * Resolver priority
@@ -7940,11 +7711,268 @@ namespace BracketSpace\Notification\Repository {
         }
     }
 }
+namespace BracketSpace\Notification\Repository\Trigger {
+    /**
+     * Trigger abstract class
+     */
+    abstract class BaseTrigger implements \BracketSpace\Notification\Interfaces\Triggerable
+    {
+        use \BracketSpace\Notification\Traits\ClassUtils;
+        use \BracketSpace\Notification\Traits\HasDescription;
+        use \BracketSpace\Notification\Traits\HasGroup;
+        use \BracketSpace\Notification\Traits\HasName;
+        use \BracketSpace\Notification\Traits\HasSlug;
+        use \BracketSpace\Notification\Dependencies\Micropackage\Casegnostic\Casegnostic;
+        /**
+         * Flag indicating that trigger
+         * has been stopped
+         *
+         * @var bool
+         */
+        protected $stopped = false;
+        /**
+         * Bound actions
+         *
+         * @var array<int, array{tag: string, priority: int, accepted_args: int}>
+         */
+        protected $actions = [];
+        /**
+         * Merge tags
+         *
+         * @var array<mixed>
+         */
+        protected $mergeTags = [];
+        /**
+         * Flag indicating that merge tags has been already added.
+         *
+         * @var bool
+         */
+        protected $mergeTagsAdded = false;
+        /**
+         * Trigger constructor
+         *
+         * @param string $slug Slug, optional.
+         * @param string $name Nice name, optional.
+         */
+        public function __construct($slug = null, $name = null)
+        {
+        }
+        /**
+         * Used to register trigger merge tags
+         *
+         * @return void
+         */
+        public function mergeTags()
+        {
+        }
+        /**
+         * Sets up the merge tags
+         *
+         * @return void
+         */
+        public function setupMergeTags()
+        {
+        }
+        /**
+         * Clears the merge tags
+         *
+         * @return $this
+         */
+        public function clearMergeTags()
+        {
+        }
+        /**
+         * Adds an action listener
+         *
+         * @param string $tag action hook.
+         * @param int $priority action priority, default 10.
+         * @param int $acceptedArgs how many args the action accepts, default 1.
+         * @since 6.0.0
+         * @since 6.3.0 Background processing action now accepts one more param for cache.
+         * @since 8.0.0 Only stores the action params in collection.
+         * @return void
+         *
+         */
+        public function addAction($tag, $priority = 10, $acceptedArgs = 1)
+        {
+        }
+        /**
+         * Removes the action from the actions library.
+         *
+         * @param string $tag action hook.
+         * @param int $priority action priority, default 10.
+         * @param mixed $deprecated deprecated.
+         * @return void
+         */
+        public function removeAction($tag, $priority = 10, $deprecated = null)
+        {
+        }
+        /**
+         * Gets Trigger actions
+         *
+         * @return array<int, array{tag: string, priority: int, accepted_args: int}>
+         * @since 8.0.0
+         */
+        public function getActions() : array
+        {
+        }
+        /**
+         * Adds Trigger's Merge Tag
+         *
+         * @param \BracketSpace\Notification\Interfaces\Taggable $mergeTag merge tag object.
+         * @return $this
+         */
+        public function addMergeTag(\BracketSpace\Notification\Interfaces\Taggable $mergeTag)
+        {
+        }
+        /**
+         * Quickly adds new Merge Tag
+         *
+         * @param string $propertyName Trigger property name.
+         * @param string $label Nice, translatable Merge Tag label.
+         * @param string $group Optional, translatable group name.
+         * @since 6.0.0
+         * @return $this
+         *
+         */
+        public function addQuickMergeTag($propertyName, $label, $group = null)
+        {
+        }
+        /**
+         * Removes Trigger's merge tag
+         *
+         * @param string $mergeTagSlug Merge Tag slug.
+         * @return $this
+         */
+        public function removeMergeTag($mergeTagSlug)
+        {
+        }
+        /**
+         * Gets Trigger's merge tags
+         *
+         * @param string $type Optional, all|visible|hidden, default: all.
+         * @param bool $grouped Optional, default: false.
+         * @return array<\BracketSpace\Notification\Interfaces\Taggable>
+         * @since 6.0.0 Added param $grouped which makes the array associative
+         *               with merge tag slugs as keys.
+         */
+        public function getMergeTags($type = 'all', $grouped = false)
+        {
+        }
+        /**
+         * Stops the trigger.
+         *
+         * @return void
+         * @since 6.2.0
+         */
+        public function stop()
+        {
+        }
+        /**
+         * Resumes the trigger.
+         *
+         * @return void
+         * @since 6.2.0
+         */
+        public function resume()
+        {
+        }
+        /**
+         * Checks if trigger has been stopped
+         *
+         * @return bool
+         */
+        public function isStopped() : bool
+        {
+        }
+        /***********************************
+         *        DEPRECATED METHODS
+         ***********************************/
+        /**
+         * All triggers can be considered postponed as of v8.0.0
+         * as they are processed on the `shutdown` hook.
+         *
+         * @param string $tag action hook.
+         * @param int $priority action priority, default 10.
+         * @param int $acceptedArgs how many args the action accepts, default 1.
+         * @return void
+         * @since 6.2.0 Action cannot be postponed if background processing is active.
+         * @since 8.0.0 Deprecated
+         * @since 6.1.0 The postponed action have own method.
+         */
+        public function postponeAction($tag, $priority = 10, $acceptedArgs = 1)
+        {
+        }
+        /**
+         * All triggers can be considered postponed as of v8.0.0
+         * as they are processed on the `shutdown` hook.
+         *
+         * @return bool
+         * @since 8.0.0 Deprecated
+         */
+        public function isPostponed()
+        {
+        }
+        /**
+         * Checks if this trigger has background processing active.
+         *
+         * @return bool
+         * @since 8.0.0 Deprecated
+         * @since 7.2.3
+         */
+        public function hasBackgroundProcessingEnabled()
+        {
+        }
+        /**
+         * Gets action arguments.
+         *
+         * @return array<mixed>
+         * @since 8.0.0 Deprecated
+         * @since 6.2.0
+         */
+        public function getActionArgs()
+        {
+        }
+        /**
+         * Always returns an empty array
+         *
+         * @return array<mixed>
+         * @since 8.0.0 Deprecated
+         * @since  6.3.0
+         */
+        public function getCache()
+        {
+        }
+        /**
+         * Doesn't do anything
+         *
+         * @param array<mixed> $cache Array with cached vars.
+         * @return $this
+         * @since  6.3.0
+         * @since 8.0.0 Deprecated
+         */
+        public function setCache($cache)
+        {
+        }
+        /**
+         * Always returns the $default value
+         *
+         * @param string $key Cache key.
+         * @param mixed $default Default value.
+         * @return mixed
+         * @since  8.0.0 Deprecated
+         * @since  6.3.0
+         */
+        public function cache($key, $default = '')
+        {
+        }
+    }
+}
 namespace BracketSpace\Notification\Repository\Trigger\Comment {
     /**
      * Comment trigger class
      */
-    abstract class CommentTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class CommentTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Comment Type slug
@@ -8237,7 +8265,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Media {
     /**
      * Media trigger class
      */
-    abstract class MediaTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class MediaTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Attachment post object
@@ -8377,7 +8405,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Plugin {
     /**
      * Plugin trigger class
      */
-    abstract class PluginTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class PluginTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Plugin details array
@@ -8582,7 +8610,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Post {
     /**
      * Post trigger class
      */
-    abstract class PostTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class PostTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Post Type slug
@@ -9139,7 +9167,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Privacy {
     /**
      * Privacy trigger abstract class
      */
-    abstract class PrivacyTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class PrivacyTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * User request object
@@ -9298,7 +9326,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Taxonomy {
     /**
      * Taxonomy trigger class
      */
-    abstract class TermTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class TermTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Taxonomy slug
@@ -9508,7 +9536,7 @@ namespace BracketSpace\Notification\Repository\Trigger\Theme {
     /**
      * Theme trigger class
      */
-    abstract class ThemeTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class ThemeTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Theme object
@@ -9651,7 +9679,7 @@ namespace BracketSpace\Notification\Repository\Trigger\User {
     /**
      * User trigger class
      */
-    abstract class UserTrigger extends \BracketSpace\Notification\Abstracts\Trigger
+    abstract class UserTrigger extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * User ID
@@ -10175,7 +10203,7 @@ namespace BracketSpace\Notification\Repository\Trigger\WordPress {
     /**
      * Site Email Change Request
      */
-    class EmailChangeRequest extends \BracketSpace\Notification\Abstracts\Trigger
+    class EmailChangeRequest extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * User login
@@ -10236,7 +10264,7 @@ namespace BracketSpace\Notification\Repository\Trigger\WordPress {
     /**
      * Site email changed trigger
      */
-    class EmailChanged extends \BracketSpace\Notification\Abstracts\Trigger
+    class EmailChanged extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * User object
@@ -10282,7 +10310,7 @@ namespace BracketSpace\Notification\Repository\Trigger\WordPress {
     /**
      * WordPress Updates Available trigger class
      */
-    class UpdatesAvailable extends \BracketSpace\Notification\Abstracts\Trigger
+    class UpdatesAvailable extends \BracketSpace\Notification\Repository\Trigger\BaseTrigger
     {
         /**
          * Update types
@@ -10449,7 +10477,7 @@ namespace BracketSpace\Notification {
         /**
          * Plugin version
          */
-        const VERSION = '8.0.0';
+        const VERSION = '9.0.0';
         /**
          * Main plugin file path
          *

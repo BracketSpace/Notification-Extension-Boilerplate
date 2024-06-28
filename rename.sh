@@ -31,7 +31,7 @@ echo "Please, provide dashed slug for your plugin, eg. my-plugin"
 echo "What is your plugin slug?"
 read user_dash_slug
 echo -e "${GREY}-- Replacing slug-namexx with ${user_dash_slug}...${NC}"
-find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./node_modules/*" -exec sed -i '' -e "s/slug-namexx/${user_dash_slug}/g" {} +
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js -o -iname \*.neon \) ! -path "./vendor/*" ! -path "./node_modules/*" -exec sed -i '' -e "s/slug-namexx/${user_dash_slug}/g" {} +
 echo -e "${GREY}-- Success!${NC}"
 echo -e "${GREY}-- Changing main plugin and pot file name ${user_dash_slug}...${NC}"
 mv notification-slug-namexx.php "notification-${user_dash_slug}.php"

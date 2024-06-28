@@ -46,7 +46,7 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		/**
 		 * Runtime object
 		 *
-		 * @var BracketSpace\Notification\XXNAMESPACEXX\Runtime
+		 * @var ?BracketSpace\Notification\XXNAMESPACEXX\Runtime
 		 */
 		protected static $runtime;
 
@@ -59,7 +59,7 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		 */
 		public static function init($pluginFile)
 		{
-			if (! isset(self::$runtime)) {
+			if (self::$runtime === null) {
 				// Autoloading.
 				require_once dirname($pluginFile) . '/vendor/autoload.php';
 				self::$runtime = new BracketSpace\Notification\XXNAMESPACEXX\Runtime($pluginFile);
@@ -72,11 +72,11 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		 * Gets runtime component
 		 *
 		 * @since  [Next]
-		 * @return array
+		 * @return array<class-string,mixed>
 		 */
 		public static function components()
 		{
-			return isset(self::$runtime) ? self::$runtime->components() : [];
+			return self::$runtime !== null ? self::$runtime->components() : [];
 		}
 
 		/**
@@ -88,14 +88,14 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		 */
 		public static function component($componentName)
 		{
-			return isset(self::$runtime) ? self::$runtime->component($componentName) : null;
+			return self::$runtime !== null ? self::$runtime->component($componentName) : null;
 		}
 
 		/**
 		 * Gets runtime object
 		 *
 		 * @since  [Next]
-		 * @return BracketSpace\Notification\Runtime
+		 * @return ?BracketSpace\Notification\XXNAMESPACEXX\Runtime
 		 */
 		public static function runtime()
 		{
@@ -107,11 +107,11 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		 *
 		 * @since  [Next]
 		 * @throws \Exception When runtime wasn't invoked yet.
-		 * @return \BracketSpace\Notification\XXNAMESPACEXX\Vendor\Micropackage\Filesystem\Filesystem
+		 * @return ?\BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Filesystem\Filesystem
 		 */
 		public static function fs()
 		{
-			if (! isset(self::$runtime)) {
+			if (self::$runtime === null) {
 				throw new \Exception('Runtime has not been invoked yet.');
 			}
 
