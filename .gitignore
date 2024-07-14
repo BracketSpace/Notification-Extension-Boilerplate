@@ -2,7 +2,8 @@
 composer.lock
 yarn.lock
 *.log
-/dependencies/
+/dependencies/*
+!/dependencies/.gitkeep
 node_modules/
 resources/*/dist/
 /vendor
