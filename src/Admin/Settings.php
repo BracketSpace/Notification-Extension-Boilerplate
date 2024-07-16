@@ -22,7 +22,7 @@ class Settings
 	 * @action notification/settings/register 20
 	 *
 	 * @since  [Next]
-	 * @param  object $settings Settings API object.
+	 * @param  \BracketSpace\Notification\Utils\Settings $settings Settings API object.
 	 * @return void
 	 */
 	public function registerTriggerSettings($settings)
@@ -50,7 +50,7 @@ class Settings
 	 * @action notification/settings/register 30
 	 *
 	 * @since  [Next]
-	 * @param  object $settings Settings API object.
+	 * @param  \BracketSpace\Notification\Utils\Settings $settings Settings API object.
 	 * @return void
 	 */
 	public function registerCarrierSettings($settings)

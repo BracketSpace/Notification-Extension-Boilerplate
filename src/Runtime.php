@@ -48,7 +48,7 @@ class Runtime
 	/**
 	 * Components
 	 *
-	 * @var array<class-string,mixed>
+	 * @var array<class-string, object>
 	 */
 	protected $components = [];
 
@@ -87,7 +87,7 @@ class Runtime
 		$requirements->register_checker(Requirements\BasePlugin::class);
 
 		if (! $requirements->satisfied()) {
-			$requirements->printNotice();
+			$requirements->print_notice();
 			$this->requirementsUnmet = true;
 			return;
 		}
@@ -138,10 +138,14 @@ class Runtime
 	/**
 	 * Gets filesystem
 	 *
-	 * @return Filesystem|null
+	 * @return Filesystem
 	 */
 	public function getFilesystem()
 	{
+		if ($this->filesystem === null) {
+			throw new \Exception('Filesystem has not been invoked yet.');
+		}
+
 		return $this->filesystem;
 	}
 
@@ -173,7 +177,7 @@ class Runtime
 	 * Gets runtime component
 	 *
 	 * @param string $name Component name.
-	 * @return mixed       Component or null
+	 * @return object|null Component or null
 	 */
 	public function component($name)
 	{
@@ -183,7 +187,7 @@ class Runtime
 	/**
 	 * Gets runtime components
 	 *
-	 * @return array
+	 * @return array<class-string, object>
 	 */
 	public function components()
 	{
@@ -201,7 +205,7 @@ class Runtime
 		$this->addComponent(
 			new Internationalization('notification-slug-namexx', $this->getFilesystem()->path('resources/languages'))
 		);
-		$this->addComponent(new Admin\Scripts($this->getFilesystem('dist')));
+		$this->addComponent(new Admin\Scripts($this->getFilesystem()));
 		$this->addComponent(new Admin\Settings());
 	}
 

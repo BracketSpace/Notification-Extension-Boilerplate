@@ -30,6 +30,11 @@ class DumpHooks
 	public function __invoke($args)
 	{
 		$runtime = MainClass::runtime();
+
+		if ($runtime === null) {
+			throw new \Exception('Runtime has not been invoked yet.');
+		}
+
 		$filesystem = $runtime->getFilesystem();
 		$hooksFile = 'compat/register-hooks.php';
 

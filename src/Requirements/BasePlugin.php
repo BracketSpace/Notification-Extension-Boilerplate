@@ -33,14 +33,14 @@ class BasePlugin extends Requirements\Abstracts\Checker
 	{
 
 		if (! class_exists('Notification')) {
-			$this->addError('The Notification plugin is required to be active.');
+			$this->add_error('The Notification plugin is required to be active.');
 		}
 
 		if (! version_compare(\Notification::version(), $value, '<')) {
 			return;
 		}
 
-		$this->addError(
+		$this->add_error(
 			sprintf(
 				// Translators: 1. Required Notification version, 2. Used Notification version.
 				__(

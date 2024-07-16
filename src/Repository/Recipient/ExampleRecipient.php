@@ -54,7 +54,7 @@ class ExampleRecipient extends BaseRecipient
 	 * {@inheritdoc}
 	 *
 	 * @since  [Next]
-	 * @return Fillable
+	 * @return \BracketSpace\Notification\Interfaces\Fillable
 	 */
 	public function input()
 	{

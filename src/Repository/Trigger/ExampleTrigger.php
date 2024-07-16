@@ -18,6 +18,13 @@ use BracketSpace\Notification\Repository\MergeTag;
 class ExampleTrigger extends BaseTrigger
 {
 	/**
+	 * Example property.
+	 *
+	 * @var  string
+	 */
+	public $prop;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct()

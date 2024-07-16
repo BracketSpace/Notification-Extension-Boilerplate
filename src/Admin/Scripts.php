@@ -44,8 +44,8 @@ class Scripts
 	 * @filter notification/scripts/allowed_hooks
 	 *
 	 * @since  [Next]
-	 * @param  array $pageHooks Page hooks.
-	 * @return array
+	 * @param  array<string> $pageHooks Page hooks.
+	 * @return array<string>
 	 */
 	public function addScreen($pageHooks)
 	{
@@ -66,7 +66,7 @@ class Scripts
 			'notification-slug-namexx',
 			$this->filesystem->url('resources/css/dist/style.css'),
 			[],
-			$this->filesystem->mtime('resources/css/dist/style.css')
+			(string)$this->filesystem->mtime('resources/css/dist/style.css')
 		);
 
 		if ($this->filesystem->exists('resources/js/dist/script.asset.php')) {

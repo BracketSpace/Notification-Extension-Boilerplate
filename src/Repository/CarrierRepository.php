@@ -9,7 +9,6 @@ declare(strict_types=1);
 
 namespace BracketSpace\Notification\XXNAMESPACEXX\Repository;
 
-use BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\DocHooks\Helper as DocHooksHelper;
 use BracketSpace\Notification\Register;
 
 /**
@@ -26,6 +25,6 @@ class CarrierRepository
 			return;
 		}
 
-		Register::carrier(DocHooksHelper::hook(new Carrier\ExampleCarrier()));
+		Register::carrier(new Carrier\ExampleCarrier());
 	}
 }

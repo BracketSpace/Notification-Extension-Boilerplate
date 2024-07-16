@@ -107,7 +107,7 @@ if (! class_exists('NotificationXXNAMESPACEXX')) :
 		 *
 		 * @since  [Next]
 		 * @throws \Exception When runtime wasn't invoked yet.
-		 * @return ?\BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Filesystem\Filesystem
+		 * @return \BracketSpace\Notification\XXNAMESPACEXX\Dependencies\Micropackage\Filesystem\Filesystem
 		 */
 		public static function fs()
 		{
