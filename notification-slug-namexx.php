@@ -9,6 +9,7 @@
  * License: GPL3
  * Text Domain: notification-slug-namexx
  * Domain Path: /resources/languages
+ * Requires Plugins: notification
  *
  * @package notification/slug-namexx
  *
