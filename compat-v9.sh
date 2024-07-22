@@ -10,6 +10,7 @@ replacements=(
 	's|notification_get_setting\(([^)]*)\)|\\Notification::settings\(\)->getSetting\1|g'
 	# Replaces common calls from snake case to camel case
 	's|->add_action|->addAction|g'
+	's|->set_group|->setGroup|g'
 	's|function merge_tags|function mergeTags|g'
 	's|->add_merge_tag|->addMergeTag|g'
 	's|->add_quick_merge_tag|->addQuickMergeTag|g'
