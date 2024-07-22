@@ -6,6 +6,8 @@ replacements=(
 	's|BracketSpace\\Notification\\\(.*\)\\Vendor\\|BracketSpace\\Notification\\\1\\Dependencies\\|g'
 	# Replaces Defaults with Repository
 	's|BracketSpace\\Notification\\Defaults\\|BracketSpace\\Notification\\Repository\\|g'
+	# Replaces settings call
+	's|notification_get_setting\(([^)]*)\)|\\Notification::settings\(\)->getSetting\1|g'
 	# Replaces common calls from snake case to camel case
 	's|->add_action|->addAction|g'
 	's|function merge_tags|function mergeTags|g'
@@ -29,6 +31,6 @@ for replacement in "${replacements[@]}"; do
 	echo "$replacement" >> "$sed_script"
 done
 
-find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./dependencies/*" ! -path "./node_modules/*" -print0 | xargs -0 -I {} sed -i -f "$sed_script" {}
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./dependencies/*" ! -path "./node_modules/*" -print0 | xargs -0 -I {} sed -i '' -f "$sed_script" {}
 
 rm "$sed_script"
