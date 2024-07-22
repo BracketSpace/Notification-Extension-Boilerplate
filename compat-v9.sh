@@ -4,6 +4,8 @@
 replacements=(
 	# Replaces Vendor namespaces to Dependencies
 	's|BracketSpace\\Notification\\\(.*\)\\Vendor\\|BracketSpace\\Notification\\\1\\Dependencies\\|g'
+	# Replaces Defaults with Repository
+	's|BracketSpace\\Notification\\Defaults\\|BracketSpace\\Notification\\Repository\\|g'
 	# Replaces common calls from snake case to camel case
 	's|->add_action|->addAction|g'
 	's|function merge_tags|function mergeTags|g'
