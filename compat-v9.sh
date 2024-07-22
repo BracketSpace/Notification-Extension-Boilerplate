@@ -32,6 +32,6 @@ for replacement in "${replacements[@]}"; do
 	echo "$replacement" >> "$sed_script"
 done
 
-find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./dependencies/*" ! -path "./node_modules/*" -print0 | xargs -0 -I {} sed -i '' -f "$sed_script" {}
+find . -type f \( -iname \*.php -o -iname \*.txt -o -iname \*.json -o -iname \*.xml -o -iname \*.js \) ! -path "./vendor/*" ! -path "./dependencies/*" ! -path "./compat/notification-stubs.php" ! -path "./node_modules/*" -print0 | xargs -0 -I {} sed -i '' -f "$sed_script" {}
 
 rm "$sed_script"
