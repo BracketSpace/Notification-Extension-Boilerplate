@@ -7,11 +7,11 @@
 		"phplint": "parallel-lint --exclude node_modules --exclude vendor --exclude dependencies .",
 		"phpstan": "phpstan analyze --memory-limit=-1",
 		"prefix-namespaces-dev": [
-			"strauss",
+			"strauss --updateCallSites=false",
 			"composer dump-autoload"
 		],
 		"prefix-namespaces-prod": [
-			"strauss --deleteVendorPackages=true",
+			"strauss  --updateCallSites=false --deleteVendorPackages=true",
 			"composer dump-autoload",
 			"rm -r vendor/bin",
 			"rm -r vendor/brianhenryie",
