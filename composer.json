@@ -5,7 +5,7 @@
 		"phpcbf": "phpcbf",
 		"phpcs": "phpcs",
 		"phplint": "parallel-lint --exclude node_modules --exclude vendor --exclude dependencies .",
-		"phpstan": "phpstan analyze --memory-limit=-1",
+		"phpstan": "phpstan analyze --memory-limit=-1 -v",
 		"prefix-namespaces-dev": [
 			"strauss --updateCallSites=false",
 			"composer dump-autoload"
