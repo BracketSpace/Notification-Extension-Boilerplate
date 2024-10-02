@@ -63,7 +63,7 @@ jobs:
         run: |
           echo "::set-output name=package-name::${{ secrets.SLUG }}-${GITHUB_REF#refs/tags/}"
       - name: Download artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: build
           path: ${{ secrets.SLUG }}
@@ -90,7 +90,7 @@ jobs:
           echo "::set-output name=version::${GITHUB_REF#refs/tags/}"
           echo "::set-output name=package-name::${{ secrets.SLUG }}-${GITHUB_REF#refs/tags/}"
       - name: Download artifact
-        uses: actions/download-artifact@v1
+        uses: actions/download-artifact@v4
         with:
           name: ${{ steps.vars.outputs.package-name }}
           path: .
